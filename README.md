@@ -2,6 +2,13 @@
 
 > **Plan smarter. Spend confidently. Visualize before you commit.**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-event--forge--taj8.vercel.app-7a1f2b?style=for-the-badge&logo=vercel&logoColor=white)](https://event-forge-taj8.vercel.app/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/somashekharvani/EventForge)
+[![Evaluation Tests](https://img.shields.io/badge/Evals-31%2F31%20Passed-2ecc71?style=for-the-badge&logo=pytest&logoColor=white)](https://github.com/somashekharvani/EventForge#verification-and-testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+
+🚀 **Live Interactive Demo:** [https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)
+
 ![EventForge Hero Banner](docs/images/eventforge_hero.jpg)
 
 **EventForge** is a Neuro-Symbolic AI event planning platform designed for weddings, birthdays, and large-scale community events. It combines generative AI with deterministic algorithms to help users create event plans, manage budgets, schedule tasks, evaluate vendors, validate venue layouts, and preview how an event will flow before committing capital.
@@ -353,20 +360,28 @@ python -c "import sys; sys.path.insert(0, 'backend'); from engines.evals import 
 
 ## Getting Started
 
-### Prerequisites
+### 🌐 Instant Live Cloud Access (No Setup Required)
+Open the deployed application directly in your browser:
+👉 **[https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)**
+
+---
+
+### Local Development Setup
+
+#### Prerequisites
 * **Operating System:** Windows, macOS, or Linux.
 * **Python:** Version 3.10 or newer (ensure *"Add Python to PATH"* is enabled during installation).
 * **Web Browser:** Google Chrome, Microsoft Edge, Safari, or Firefox.
 
-### Installation
-1. Clone or extract the project repository:
+#### Installation
+1. Clone the project repository:
    ```powershell
-   git clone https://github.com/your-username/eventforge.git
-   cd eventforge
+   git clone https://github.com/somashekharvani/EventForge.git
+   cd EventForge
    ```
 2. Install Python dependencies:
    ```powershell
-   pip install starlette uvicorn pydantic numpy pillow reportlab
+   pip install -r requirements.txt
    ```
 
 ### Running the Application
