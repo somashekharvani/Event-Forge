@@ -7,7 +7,8 @@
 [![Evaluation Tests](https://img.shields.io/badge/Evals-31%2F31%20Passed-2ecc71?style=for-the-badge&logo=pytest&logoColor=white)](https://github.com/somashekharvani/EventForge#verification-and-testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-🚀 **Live Interactive Demo:** [https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)
+🚀 **Live Interactive Demo:** [https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)  
+🎥 **Official Submission Demo Video (1080p Real-Time Walkthrough):** [`EventForge_Challenge5_Demo.mp4`](EventForge_Challenge5_Demo.mp4)
 
 ![EventForge Hero Banner](docs/images/eventforge_hero.jpg)
 
