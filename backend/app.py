@@ -551,5 +551,21 @@ for r in routes:
 for alias in ["/api", "/api/", "/api/index.py", "/index.py", "/index.html"]:
     expanded_routes.append(Route(alias, index))
 
-app = Starlette(routes=expanded_routes)
+class VercelPathFixer:
+    """Restores original request path from cloud proxy headers (x-matched-path, x-forwarded-uri)."""
+    def __init__(self, asgi_app):
+        self.asgi_app = asgi_app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            headers = dict(scope.get("headers", []))
+            for h in [b"x-matched-path", b"x-forwarded-uri", b"x-original-url", b"x-rewrite-url"]:
+                if h in headers:
+                    val = headers[h].decode("utf-8")
+                    if val and val != "/":
+                        scope["path"] = val.split("?")[0]
+                        break
+        await self.asgi_app(scope, receive, send)
+
+app = VercelPathFixer(Starlette(routes=expanded_routes))
 
