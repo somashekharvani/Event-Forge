@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EventForge — plan weddings, birthdays and community events</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div id="app">
+  <nav id="rail" aria-label="Sections">
+    <div class="brand">Event<i>Forge</i></div>
+    <div class="nav" id="nav"></div>
+  </nav>
+  <div id="main">
+    <div id="topbar" hidden></div>
+    <main id="view" tabindex="-1"></main>
+  </div>
+</div>
+<button id="fab" class="btn gold" hidden aria-controls="chat">Ask EventForge</button>
+<aside id="chat" aria-label="Planning assistant" hidden>
+  <header><b>Planning assistant</b><span class="chip sample" id="llmchip"></span><span class="grow"></span><button class="btn ghost sm" id="chat-x" aria-label="Close assistant">Close</button></header>
+  <div id="msgs" aria-live="polite"></div>
+  <div class="row tight" style="padding:0 12px" id="chat-sugg"></div>
+  <form id="chat-form"><input id="chat-in" autocomplete="off" placeholder="Make it 400 guests…" aria-label="Message"><button class="btn gold">Send</button></form>
+</aside>
+<div id="overlay" role="dialog" aria-modal="true"><div class="modal" id="modal"></div></div>
+<div id="toasts" role="status"></div>
+<script src="/static/js/core.js"></script>
+<script src="/static/js/charts.js"></script>
+<script src="/static/js/v_home.js"></script>
+<script src="/static/js/v_overview.js"></script>
+<script src="/static/js/v_budget.js"></script>
+<script src="/static/js/v_timeline.js"></script>
+<script src="/static/js/v_vendors.js"></script>
+<script src="/static/js/v_ideas.js"></script>
+<script src="/static/js/v_vision.js"></script>
+<script src="/static/js/walk3d.js"></script>
+<script src="/static/js/v_community.js"></script>
+<script src="/static/js/v_verify.js"></script>
+<script src="/static/js/boot.js"></script>
+</body>
+</html>
