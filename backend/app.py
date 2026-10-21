@@ -31,6 +31,11 @@ from engines.money import fmt_inr, fmt_short, to_paise
 from engines.spec import build_spec, parse_intake
 
 FRONT = ROOT / "frontend"
+if not FRONT.exists():
+    for candidate in [Path.cwd() / "frontend", Path(__file__).resolve().parent / "frontend", Path("/var/task/frontend")]:
+        if candidate.exists():
+            FRONT = candidate
+            break
 
 
 def J(data, status=200):

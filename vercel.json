@@ -1,14 +1,17 @@
 {
-   version: 2,
-  functions: {
-    api/index.py: {
-      includeFiles: frontend/**
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": [
+        "frontend/**",
+        "backend/**"
+      ]
     }
   },
-  rewrites: [
+  "rewrites": [
     {
-      source: / ,
-       destination: /api/index.py
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
   ]
 }
