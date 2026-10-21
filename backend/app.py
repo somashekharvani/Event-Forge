@@ -490,6 +490,8 @@ async def export(req):
 
 
 async def index(req):
+    if req.query_params.get("debug"):
+        return JSONResponse({"scope_path": req.scope.get("path"), "headers": dict(req.headers)})
     return FileResponse(FRONT / "index.html")
 
 
