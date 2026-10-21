@@ -538,4 +538,18 @@ routes = [
     Route("/api/projects/{pid}/export/{kind}", export),
     Mount("/static", app=StaticFiles(directory=str(FRONT)), name="static"),
 ]
-app = Starlette(routes=routes)
+
+# Provide aliases for both prefixed (/api/...) and direct (/...) routes
+# so any cloud proxy (Vercel, Render, Railway, AWS Lambda) resolves seamlessly.
+expanded_routes = []
+for r in routes:
+    expanded_routes.append(r)
+    if isinstance(r, Route) and r.path.startswith("/api/"):
+        unprefixed = r.path[4:]  # e.g. /health, /projects
+        expanded_routes.append(Route(unprefixed, r.endpoint, methods=r.methods))
+
+for alias in ["/api", "/api/", "/api/index.py", "/index.py", "/index.html"]:
+    expanded_routes.append(Route(alias, index))
+
+app = Starlette(routes=expanded_routes)
+
