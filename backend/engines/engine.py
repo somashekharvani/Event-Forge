@@ -377,8 +377,13 @@ def impact(before: dict, after: dict, dirty: list[str], changes: dict) -> dict:
 # ---------------------------------------------------------------------------------------------
 # persistence
 def db():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    c = sqlite3.connect(DB_PATH, check_same_thread=False)
+    try:
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        c = sqlite3.connect(DB_PATH, check_same_thread=False)
+    except (OSError, PermissionError):
+        import tempfile
+        fallback_path = Path(tempfile.gettempdir()) / "eventforge.db"
+        c = sqlite3.connect(fallback_path, check_same_thread=False)
     c.row_factory = sqlite3.Row
     c.executescript("""
     CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY, name TEXT, created TEXT, current_version INTEGER, redo TEXT DEFAULT '[]');

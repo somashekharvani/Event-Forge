@@ -7,8 +7,17 @@ from __future__ import annotations
 import base64
 import datetime as dt
 import json
+import os
 import re
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+BACKEND = ROOT / "backend"
+if str(BACKEND) not in sys.path:
+    sys.path.insert(0, str(BACKEND))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
@@ -21,7 +30,6 @@ from engines import budget as B, community as C, critic as K, engine as E, evals
 from engines.money import fmt_inr, fmt_short, to_paise
 from engines.spec import build_spec, parse_intake
 
-ROOT = Path(__file__).resolve().parent.parent
 FRONT = ROOT / "frontend"
 
 
