@@ -150,6 +150,7 @@ def _parse_date(text: str, today: dt.date) -> tuple[dt.date | None, bool, str]:
 
 def parse_intake(text: str, today: dt.date | None = None, base: dict | None = None) -> dict:
     today = today or dt.date.today()
+    text = str(text or "")[:5000]
     t = text.lower()
     f: dict = dict(base or {})
     ev: dict[str, str] = {}

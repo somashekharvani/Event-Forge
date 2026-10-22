@@ -2,7 +2,11 @@ import os
 import sys
 from pathlib import Path
 
-# Serverless environment DB location
+# Serverless and thread safety configuration
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+
 if 'EVENTFORGE_DB' not in os.environ:
     os.environ['EVENTFORGE_DB'] = '/tmp/eventforge.db'
 

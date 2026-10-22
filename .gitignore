@@ -6,3 +6,10 @@ __pycache__/
 .DS_Store
 Thumbs.db
 backend/data/*.db
+videos/
+demo_production/
+*.webm
+*.mp4
+*.mov
+*.avi
+*.mkv

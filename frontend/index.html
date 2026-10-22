@@ -10,25 +10,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+<a href="#view" class="skip-link">Skip to main content</a>
+<div id="live-announcer" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 <div id="app" class="landing-layout">
-  <nav id="rail" aria-label="Sections" hidden>
-    <div class="brand"><span class="brand-sparkle">✦</span> Event<i>Forge</i></div>
+  <nav id="rail" aria-label="Main Navigation" role="navigation" hidden>
+    <div class="brand"><span class="brand-sparkle" aria-hidden="true">✦</span> Event<i>Forge</i></div>
     <div class="nav" id="nav"></div>
   </nav>
-  <div id="main">
-    <div id="topbar" hidden></div>
-    <main id="view" tabindex="-1"></main>
+  <div id="main" role="region" aria-label="Workspace View">
+    <header id="topbar" role="banner" hidden></header>
+    <main id="view" tabindex="-1" role="main"></main>
   </div>
 </div>
-<button id="fab" class="btn gold" hidden aria-controls="chat">Ask EventForge</button>
-<aside id="chat" aria-label="Planning assistant" hidden>
+<button id="fab" class="btn gold" hidden aria-controls="chat" aria-label="Open planning assistant chat">Ask EventForge</button>
+<aside id="chat" aria-label="Planning assistant" role="complementary" hidden>
   <header><b>Planning assistant</b><span class="chip sample" id="llmchip"></span><span class="grow"></span><button class="btn ghost sm" id="chat-x" aria-label="Close assistant">Close</button></header>
   <div id="msgs" aria-live="polite"></div>
   <div class="row tight" style="padding:0 12px" id="chat-sugg"></div>
-  <form id="chat-form"><input id="chat-in" autocomplete="off" placeholder="Make it 400 guests…" aria-label="Message"><button class="btn gold">Send</button></form>
+  <form id="chat-form">
+    <label for="chat-in" class="sr-only">Message the planning assistant</label>
+    <input id="chat-in" autocomplete="off" placeholder="Make it 400 guests…" aria-label="Message the planning assistant">
+    <button type="submit" class="btn gold" aria-label="Send message">Send</button>
+  </form>
 </aside>
-<div id="overlay" role="dialog" aria-modal="true"><div class="modal" id="modal"></div></div>
-<div id="toasts" role="status"></div>
+<div id="overlay" role="dialog" aria-modal="true" aria-hidden="true"><div class="modal" id="modal"></div></div>
+<div id="toasts" role="status" aria-live="polite"></div>
 <script src="/static/js/core.js"></script>
 <script src="/static/js/charts.js"></script>
 <script src="/static/js/v_intake.js"></script>

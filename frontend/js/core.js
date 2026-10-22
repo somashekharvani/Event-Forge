@@ -64,8 +64,17 @@ async function api(path, opts = {}) {
   return data;
 }
 
+function announce(msg) {
+  const el = $("#live-announcer");
+  if (el) {
+    el.textContent = "";
+    setTimeout(() => { el.textContent = msg; }, 50);
+  }
+}
+
 function toast(msg, kind = "") {
   const t = document.createElement("div"); t.className = "toast " + kind; t.textContent = msg; $("#toasts").append(t);
+  announce(msg);
   setTimeout(() => t.remove(), kind === "bad" ? 6000 : 3200);
 }
 
@@ -84,6 +93,7 @@ function go(tab, sub) {
   S.tab = tab;
   if (sub) S.sub[tab] = sub;
   render();
+  announce(`Loaded ${cap(tab)} workspace view`);
   window.scrollTo({ top: 0, behavior: "smooth" });
   try { location.hash = tab === "landing" ? "" : tab; } catch { }
 }
@@ -132,7 +142,7 @@ function renderTop() {
   const feas = { feasible: ["ok", "Within budget"], at_risk: ["warn", "Tight on budget"], infeasible: ["bad", "Over budget"] }[o.feasibility] || ["info", o.feasibility];
   
   t.innerHTML = `
-    <button class="btn ghost sm" id="btn-top-home" title="Return to Public Homepage">← Home</button>
+    <button class="btn ghost sm" id="btn-top-home" title="Return to Public Homepage" aria-label="Return to Public Homepage">← Home</button>
     <div>
       <div class="title">${esc(p.name)}</div>
       <div class="small muted">${cap(sp.event_type)} · ${esc(sp.city)} · ${fdate(sp.date)}${sp.date_assumed ? " (assumed)" : ""}</div>
@@ -143,10 +153,10 @@ function renderTop() {
     <div class="grow"></div>
     <label class="f" style="min-width:210px">
       <span>Guests: <b id="gv">${sp.guests}</b> <span id="gd" class="small"></span></span>
-      <input type="range" id="gslider" min="10" max="${Math.max(800, sp.guests * 2)}" step="5" value="${sp.guests}" aria-label="What-if guest count">
+      <input type="range" id="gslider" min="10" max="${Math.max(800, sp.guests * 2)}" step="5" value="${sp.guests}" aria-label="What-if guest count slider">
     </label>
-    <button class="btn ghost sm" id="undo" title="Undo last applied change">Undo</button>
-    <button class="btn ghost sm" id="redo" title="Redo last change">Redo</button>`;
+    <button class="btn ghost sm" id="undo" title="Undo last applied change" aria-label="Undo last applied change">Undo</button>
+    <button class="btn ghost sm" id="redo" title="Redo last change" aria-label="Redo last change">Redo</button>`;
 
   const homeBtn = $("#btn-top-home", t);
   if (homeBtn) homeBtn.onclick = () => go("landing");

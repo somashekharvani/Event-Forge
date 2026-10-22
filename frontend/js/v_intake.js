@@ -82,7 +82,7 @@ VIEWS.intake = {
             Type anything in freeform English. The parser extracts dates, guest counts, budget limits, city, and cultural preferences:
           </p>
           <label class="f">
-            <textarea id="intake-text" rows="3" placeholder="e.g. My sister's wedding in Mysore, March, about 300 guests, ₹15 lakh, two days, mostly vegetarian">${esc(IN.text)}</textarea>
+            <textarea id="intake-text" rows="3" aria-label="Event brief description in freeform English" placeholder="e.g. My sister's wedding in Mysore, March, about 300 guests, ₹15 lakh, two days, mostly vegetarian">${esc(IN.text)}</textarea>
           </label>
           <div class="row mt">
             <button class="btn gold sm" id="intake-parse-btn">Parse &amp; Extract Fields</button>

@@ -8,6 +8,9 @@ import base64
 import datetime as dt
 import json
 import os
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
 import re
 import sys
 from pathlib import Path
@@ -21,6 +24,8 @@ if str(ROOT) not in sys.path:
 
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse, Response
 from starlette.routing import Mount, Route
@@ -54,20 +59,22 @@ def handler(fn):
         try:
             return await fn(req)
         except KeyError as e:
-            return J({"error": f"Not found: {e}"}, 404)
+            return J({"error": f"Resource not found: {e}"}, 404)
         except (ValueError, TypeError) as e:
             msg = str(e)
             if "validation error" in msg:
                 lines = [l.strip() for l in msg.split("\n") if l.strip() and "pydantic.dev" not in l and "validation error" not in l]
                 return J({"error": "Invalid input — " + "; ".join(lines)[:300]}, 422)
-            return J({"error": msg}, 400)
-        except HTTPException:
-            raise
-        except Exception as e:  # pydantic validation etc.
+            return J({"error": msg[:300]}, 400)
+        except HTTPException as e:
+            return J({"error": e.detail}, e.status_code)
+        except Exception as e:
             msg = str(e)
             if "validation error" in msg:
                 return J({"error": "Invalid input: " + re.sub(r"\n.*For further information.*", "", msg)[:400]}, 422)
-            raise
+            import logging
+            logging.getLogger("eventforge.api").exception("Internal server error in route %s", fn.__name__)
+            return J({"error": "An internal error occurred while processing your request."}, 500)
     wrapper.__name__ = fn.__name__
     return wrapper
 
@@ -553,6 +560,47 @@ for r in routes:
 for alias in ["/api", "/api/", "/api/index.py", "/index.py", "/index.html"]:
     expanded_routes.append(Route(alias, index))
 
+class SecurityHeadersMiddleware:
+    """Injects standard OWASP security headers into all responses and limits request size."""
+    def __init__(self, asgi_app):
+        self.asgi_app = asgi_app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http":
+            return await self.asgi_app(scope, receive, send)
+
+        # Enforce maximum payload size (10MB limit) to protect against DoS
+        headers_dict = dict(scope.get("headers", []))
+        content_length = headers_dict.get(b"content-length")
+        if content_length:
+            try:
+                if int(content_length) > 10 * 1024 * 1024:
+                    response = JSONResponse({"error": "Payload too large. Maximum size is 10MB."}, status_code=413)
+                    return await response(scope, receive, send)
+            except ValueError:
+                pass
+
+        async def send_with_security_headers(message):
+            if message.get("type") == "http.response.start":
+                headers = list(message.get("headers", []))
+                sec_headers = [
+                    (b"x-content-type-options", b"nosniff"),
+                    (b"x-frame-options", b"SAMEORIGIN"),
+                    (b"x-xss-protection", b"1; mode=block"),
+                    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+                    (b"permissions-policy", b"geolocation=(), camera=(), microphone=()"),
+                    (b"content-security-policy", b"default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:;")
+                ]
+                existing = {h[0].lower() for h in headers}
+                for k, v in sec_headers:
+                    if k not in existing:
+                        headers.append((k, v))
+                message["headers"] = headers
+            await send(message)
+
+        await self.asgi_app(scope, receive, send_with_security_headers)
+
+
 class VercelPathFixer:
     """Restores original request path from cloud proxy headers (x-matched-path, x-forwarded-uri)."""
     def __init__(self, asgi_app):
@@ -569,5 +617,14 @@ class VercelPathFixer:
                         break
         await self.asgi_app(scope, receive, send)
 
-app = VercelPathFixer(Starlette(routes=expanded_routes))
+cors_middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS", "HEAD"],
+        allow_headers=["*"],
+    )
+]
+
+app = VercelPathFixer(SecurityHeadersMiddleware(Starlette(routes=expanded_routes, middleware=cors_middleware)))
 

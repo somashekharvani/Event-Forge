@@ -16,7 +16,7 @@ From a traditional South Indian temple-themed wedding to a modern corporate gala
 
 * **🌐 Live Demo:** [https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)
 * **💻 GitHub Repository:** [https://github.com/somashekharvani/Event-Forge](https://github.com/somashekharvani/Event-Forge)
-* **🎥 Demo Video:** [https://youtu.be/34n7f3RcrKw](https://youtu.be/34n7f3RcrKw)
+* **🎥 Official Demo Video:** [Watch on YouTube (1080p HD)](https://youtu.be/34n7f3RcrKw)
 * **📊 Project Presentation:** [Presentation Link](https://github.com/somashekharvani/Event-Forge)
 
 ---
