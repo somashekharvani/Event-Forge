@@ -1,411 +1,556 @@
-# EventForge — AI-Powered Event Planning & Decision Intelligence
+# EventForge — Neuro-Symbolic AI Event Planner
 
-> **Plan smarter. Spend confidently. Visualize before you commit.**
+> **Plan Smarter. Visualize Every Detail. Celebrate Without Limits.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-event--forge--taj8.vercel.app-7a1f2b?style=for-the-badge&logo=vercel&logoColor=white)](https://event-forge-taj8.vercel.app/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/somashekharvani/EventForge)
-[![Evaluation Tests](https://img.shields.io/badge/Evals-31%2F31%20Passed-2ecc71?style=for-the-badge&logo=pytest&logoColor=white)](https://github.com/somashekharvani/EventForge#verification-and-testing)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/34n7f3RcrKw)
+[![Evaluation Tests](https://img.shields.io/badge/Evals-31%2F31%20Passed-2ecc71?style=for-the-badge&logo=pytest&logoColor=white)](#testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](#license)
 
-🚀 **Live Interactive Demo:** [https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)  
-🎥 **Official Submission Demo Video (1080p Real-Time Walkthrough):** [`EventForge_Challenge5_Demo.mp4`](EventForge_Challenge5_Demo.mp4)
+**EventForge** is an intelligent event-planning platform designed to transform event ideas into structured, budget-aware, and visually interactive celebration plans. It combines deterministic planning algorithms, financial analytics, venue-layout validation, AI-assisted recommendations, vendor coordination, and immersive 3D visualization in one unified experience.
 
-![EventForge Hero Banner](docs/images/eventforge_hero.jpg)
+From a traditional South Indian temple-themed wedding to a modern corporate gala, EventForge helps users design, plan, compare, validate, and coordinate events from the initial idea through event-day execution.
 
-**EventForge** is a Neuro-Symbolic AI event planning platform designed for weddings, birthdays, and large-scale community events. It combines generative AI with deterministic algorithms to help users create event plans, manage budgets, schedule tasks, evaluate vendors, validate venue layouts, and preview how an event will flow before committing capital.
+---
 
-Unlike conventional chatbots that guess numbers and hallucinate dates, EventForge strictly separates AI-powered language understanding and creative inspiration from code-based calculations and geometric verification.
-
-> **Core Philosophy:** *Let Generative AI handle conversation, semantic understanding, and creative inspiration. Let deterministic algorithms handle financial calculations, scheduling dependencies, and geometric validation.*
+* **🌐 Live Demo:** [https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)
+* **💻 GitHub Repository:** [https://github.com/somashekharvani/EventForge](https://github.com/somashekharvani/EventForge)
+* **🎥 Demo Video:** [https://youtu.be/34n7f3RcrKw](https://youtu.be/34n7f3RcrKw)
+* **📊 Project Presentation:** [Presentation Link](https://github.com/somashekharvani/EventForge)
 
 ---
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Problem Statement](#problem-statement)
-- [Our Solution: Neuro-Symbolic Architecture](#our-solution-neuro-symbolic-architecture)
-- [System Architecture](#system-architecture)
+- [Our Solution](#our-solution)
 - [Key Features](#key-features)
-  - [1. Smart Intake & Event Specification](#1-smart-intake-and-event-specification)
-  - [2. Deterministic Financial Engine & Pareto Optimizer](#2-deterministic-financial-engine--pareto-optimizer)
-  - [3. Operations Research & Timeline Engine](#3-operations-research-and-timeline-engine)
-  - [4. Vendor Intelligence & Contract Parsing](#4-vendor-intelligence--contract-parsing)
-  - [5. Cultural & Dietary Protocol Intelligence](#5-cultural-and-dietary-protocol-intelligence)
-  - [6. Adversarial Critic, Emergency Plan B & Judge Challenge](#6-adversarial-critic-emergency-plan-b--judge-challenge)
-  - [7. Change-Impact Engine & Transactional Rollback](#7-change-impact-engine--transactional-rollback)
-  - [8. Event Day War Room Dispatcher](#8-event-day-war-room-dispatcher)
-- [EventForge Vision Studio](#eventforge-vision-studio)
-- [Algorithms and Technical Innovation](#algorithms-and-technical-innovation)
+- [AI Planning Assistant](#ai-planning-assistant)
+- [Smart Budget Optimizer](#smart-budget-optimizer)
+- [Event Design Showdown](#event-design-showdown)
+- [Theme-Aware Vision Studio](#theme-aware-vision-studio)
+- [2D Floor Plan and 3D Synchronization](#2d-floor-plan-and-3d-synchronization)
+- [Cinematic Walkthrough](#cinematic-walkthrough)
+- [Smart Vendor Marketplace](#smart-vendor-marketplace)
+- [What-If Event Simulator](#what-if-event-simulator)
+- [Guest Flow and Venue Validation](#guest-flow-and-venue-validation)
+- [Event-Day War Room](#event-day-war-room)
+- [Event Production Pack](#event-production-pack)
+- [System Architecture](#system-architecture)
 - [Technology Stack](#technology-stack)
-- [Event Planning Workflow](#event-planning-workflow)
-- [Verification and Testing](#verification-and-testing)
-- [Market Opportunity and Business Model](#market-opportunity-and-business-model)
-- [Future Enhancements](#future-enhancements)
-- [Responsible Use and Limitations](#responsible-use-and-limitations)
 - [Getting Started](#getting-started)
-- [Project Status & License](#project-status--license)
+- [Environment Configuration](#environment-configuration)
+- [Example Workflow](#example-workflow)
+- [Testing](#testing)
+- [Security and Reliability](#security-and-reliability)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
 
 ---
 
 ## Overview
 
-EventForge transforms event planning into a structured, explainable, and interactive engineering process.
+Traditional event planning often requires coordinating multiple disconnected tools for budgeting, venue design, vendors, catering, decorations, scheduling, and guest management.
 
-From an initial natural-language prompt to a verified event plan, the platform coordinates financial planning, operational scheduling, vendor intelligence, cultural personalization, venue visualization, and risk analysis through a single, shared event specification.
+**EventForge** brings these workflows into a unified planning environment.
 
-![EventForge Dashboard](docs/images/dashboard_preview.jpg)
+Users can describe their event requirements, explore alternative plans, evaluate costs, customize a venue, review vendor options, and analyze operational risks before committing to changes.
 
-### Example Scenario
-A user wants to organize a two-day traditional wedding in Mysuru, Karnataka, for 300 guests with a budget of ₹15,00,000.
+The platform combines **neuro-symbolic planning principles** with deterministic algorithms: flexible requirement interpretation and contextual recommendations are paired with explicit calculations, constraints, validation rules, and structured planning workflows.
 
-EventForge assists the user end-to-end:
-1. **Intake:** Converts free-form text into a validated event specification.
-2. **Budgeting:** Generates a categorized budget with exact integer apportionment and contingency reserves.
-3. **Scheduling:** Organizes tasks and deadlines using dependency-aware scheduling (Critical Path Method).
-4. **Vendors:** Prepares checklists, ranks local vendors, and compares quotes.
-5. **Traditions & Menus:** Suggests culturally tailored ceremonies (e.g., *Dhare Muhurtham*, *Saptapadi*), menus, and themes.
-6. **Floor Plan Studio:** Validates room capacity and identifies geometric collisions or blocked fire doors.
-7. **Interactive Changes:** Simulates changes (e.g., *"Make it 400 guests"*) with before-and-after diffs.
-8. **Verification:** Validates hard invariants and models contingency stress tests.
-9. **Walkthrough:** Provides a first-person planning preview with audio narration.
-
-*(Note: All sample prices, simulated costs, and vendor ratings in the demo catalog are heuristic planning assumptions).*
+The goal is to make event planning more visual, explainable, financially transparent, and operationally reliable.
 
 ---
 
 ## Problem Statement
 
-Planning weddings, birthdays, and community gatherings involves coordinating dozens of tightly coupled, high-stakes decisions:
-* **Financial Risk:** Budget misallocations, hidden GST taxes, and sudden cost overruns.
-* **Spatial & Safety Hazards:** Overcrowded halls, blocked emergency exits, and acoustic interference.
-* **Scheduling Collisions:** Complex multi-vendor workflows with circular dependencies and unrealistic lead times.
-* **Cultural Nuances:** Traditional ceremony timelines, sacred ritual item requirements, and strict dietary segregation (e.g., Jain vegetarian requirements).
-* **The "Chatbot Hallucination" Trap:** Standard LLMs frequently drop pennies on arithmetic, create impossible timelines, and guess dimensions.
+Planning a successful event involves more than selecting decorations and booking a venue. Organizers must coordinate:
 
-EventForge solves these challenges through an integrated planning system with structured data, deterministic calculations, and explicit invariant verification.
+* **Budgets** across multiple expense categories.
+* **Venue capacity**, seating, access, and layout constraints.
+* **Catering, sound systems, entertainment, lighting, and decoration.**
+* **Vendor quotations**, availability, and service requirements.
+* **Dependencies** between activities and event schedules.
+* **Unexpected expenses**, delays, and last-minute changes.
+* **Consistency** between the planned venue and its visual presentation.
 
----
-
-## Our Solution: Neuro-Symbolic Architecture
-
-EventForge combines **Generative AI** and **Deterministic Algorithms** into a unified, complementary system:
-
-| Neural Intelligence (Generative AI) | Symbolic & Deterministic Intelligence (Code) |
-| :--- | :--- |
-| • Natural language intent extraction | • Exact integer-paise financial apportionment |
-| • Contextual disambiguation & user clarification | • Hamilton-Hare largest-remainder allocation |
-| • Creative theme styling & invitation drafting | • Directed Acyclic Graph (DAG) topological scheduling |
-| • Cultural traditions & regional menu ideas | • Critical Path Method (CPM) slack & crashing |
-| • Conversational explanation & audio narration | • Computational geometry & Dijkstra exit pathfinding |
-| • Contextual risk observations | • Automated adversarial invariant verification (31/31) |
+When these activities are managed independently, changes can lead to cost overruns, conflicting schedules, missing services, and poor coordination.
 
 ---
 
-## System Architecture
+## Our Solution
 
-The system revolves around a unified, validated Event Spec state machine. Every planning engine is a pure function of a slice of this state, enabling automatic cache invalidation and pre-flight change differential previews.
+EventForge provides a connected environment for event planning and production. Its approach combines:
 
-```mermaid
-flowchart TD
-    A["User Natural-Language Input"] --> B["Intake Agent"]
-    B --> C["Clarification & Validation"]
-    C --> D["Unified Event Spec State"]
-    D --> E["Financial Engine"]
-    D --> F["Timeline Engine"]
-    D --> G["Spatial & Vision Engine"]
-    D --> H["Vendor Intelligence"]
-    D --> I["Creative & Cultural Intelligence"]
-    E --> J["Dual-Layer Verifier"]
-    F --> J
-    G --> J
-    H --> J
-    I --> J
-    J --> K["Dashboard & Planning Results"]
-    K --> L["Visual Walkthrough & Exports"]
-    K --> M["Change-Impact Differential"]
-    M --> N{"User Approval"}
-    N -->|Approve| D
-    N -->|Reject| K
-```
+* **Intelligent planning** — Convert event requirements into structured plans.
+* **Financial intelligence** — Calculate costs, compare alternatives, and evaluate uncertainty.
+* **Visual intelligence** — Explore themes, floor plans, and 3D venue concepts.
+* **Vendor coordination** — Organize service categories, comparisons, estimates, and selections.
+* **Operational intelligence** — Analyze dependencies, validate constraints, and prepare recovery plans.
+* **Explainability** — Present assumptions, calculations, validation results, and trade-offs.
+
+The intended result is a digital event-planning workspace where design decisions, financial consequences, and operational requirements remain connected.
 
 ---
 
 ## Key Features
 
-### 1. Smart Intake and Event Specification
-Users describe their event in plain language instead of filling out exhausting multi-page forms.
-* **Example:** *"My sister's wedding is in Mysuru in March, with around 300 guests, a ₹15 lakh budget, mostly vegetarian food, two days of celebrations, and no loud music."*
-* **Structured Extraction:** Extracts event type, dates, guest counts, budget, diet, traditions, and priorities.
-* **Explicit vs. Inferred:** Inferred defaults (like assuming the second Saturday of a month) are explicitly tagged (`date_assumed: true`), mandating user confirmation before bookings.
-* **Zero-Cold-Start Fallback:** 100% operational offline without external API keys via regex/keyword deterministic extractors.
+| Feature | Purpose |
+| :--- | :--- |
+| **AI Planning Assistant** | Helps users explore event plans and contextual recommendations |
+| **Smart Budget Optimizer** | Calculates expense allocations and compares spending alternatives |
+| **Event Design Showdown** | Compares Budget Smart, Balanced, and Premium concepts |
+| **Theme-Aware Vision Studio** | Presents theme-specific venue and decoration concepts |
+| **2D Floor Plan** | Supports spatial arrangement and layout inspection |
+| **Interactive 3D Preview** | Visualizes venue geometry, stage, seating, and decorations |
+| **Cinematic Walkthrough** | Provides a camera-based tour of the configured venue |
+| **Vendor Marketplace** | Organizes venue, catering, entertainment, decor, and operational services |
+| **What-If Simulator** | Evaluates proposed changes and their potential consequences |
+| **Critical-Path Scheduling** | Models dependencies and identifies schedule-critical activities |
+| **Venue Validation** | Checks supported spatial and capacity constraints |
+| **Event-Day War Room** | Supports incident tracking and recovery planning |
+| **Event Production Pack** | Consolidates event details into a shareable planning document |
 
 ---
 
-### 2. Deterministic Financial Engine & Pareto Optimizer
-A structured, mathematically sound approach to event budgeting.
+## AI Planning Assistant
 
-![EventForge Budget Analytics](docs/images/budget_analytics.jpg)
+EventForge is designed to provide a contextual planning assistant that works with the active event requirements. Users can request plans and changes using natural language.
 
-* **Integer-Paise Arithmetic:** All calculations use integer paise (1 Rupee = 100 paise) to eliminate IEEE-754 floating-point drift.
-* **Hamilton-Hare Allocation:** Categories sum exactly to the budget total without rounding discrepancies.
-* **10,000-Scenario Monte Carlo Simulation:** Vectorized NumPy simulation modeling correlated market volatility (log-normal shock) and guest attendance elasticity. Computes P50, P75, P90, P95, and variance attribution.
-* **Pareto Multi-Strategy Optimizer:** Rather than vague advice, computes 3 distinct mathematical compromise strategies:
-  1. *The Guest Trim:* Exact savings from scaling attendance by 15%, preserving premium catering/decor.
-  2. *Seasonal Floral & Buffet Pivot:* Saves 20–25% by shifting to seasonal Marigold/Mango leaves + buffet service.
-  3. *Schedule & Shift Compression:* Consolidates multi-day setups to eliminate duplicate venue rental days.
-* **GST & Surcharge Auditor:** Audits statutory tax exposure (18% photography/venue/decor, 5% standalone catering, generator diesel, and municipal sound clearances) with explicit CA verification advisories.
+### Example requests:
+* *"Plan a traditional South Indian wedding for 300 guests."*
+* *"Suggest a better decoration plan within my current budget."*
+* *"Reduce the total budget without compromising essential services."*
+* *"Recommend catering and sound-system options."*
+* *"Compare a traditional wedding with a modern luxury theme."*
+* *"Suggest alternatives if my venue becomes unavailable."*
 
----
+### Planning capabilities:
+The assistant is designed to:
+* Interpret event requirements and identify missing details.
+* Generate alternative planning proposals.
+* Explain budget and scheduling trade-offs.
+* Recommend relevant service categories.
+* Propose changes to the event configuration.
+* Present estimated cost and operational impacts.
+* Explain assumptions and validation results.
 
-### 3. Operations Research and Timeline Engine
-Models event preparation as a Directed Acyclic Graph (DAG) with Kahn's topological sort.
-* **Critical Path Method (CPM):** Computes Early/Late Start and Finish boundaries, total float, and free slack.
-* **Infeasibility Detection:** If an event date is impossible, it reports the shortfall and calculates the **Earliest Feasible Date**.
-* **Resource-Constrained Leveling:** Serial Schedule Generation Scheme (SGS) resolving coordinator capacity bottlenecks.
-* **Export:** One-click sync to `.ics` calendar files and weekly digest summaries.
-
----
-
-### 4. Vendor Intelligence & Contract Parsing
-* **Multi-Criteria Scoring:** Transparent weighted ranking across budget fit, verified rating, distance, and availability.
-* **Quote Discrepancy Extractor:** Extracts itemized prices, GST rates, and flags missing SLA or cancellation clauses.
-* **Bilingual Outreach Generator:** Prepares tailored outreach messages in English and हिन्दी for WhatsApp and email.
-* **Automatic Backup Allocation:** Maintains shortlisted backup options for critical categories.
+### User-controlled changes:
+Proposed changes are presented for review in an interactive impact modal before they are applied to the active event. The assistant distinguishes deterministic calculations from generated recommendations.
 
 ---
 
-### 5. Cultural and Dietary Protocol Intelligence
-* **Regional Protocols:** Dedicated ceremony timelines and customs for:
-  * **Kannada:** *Varapooje, Nandi, Dhare Muhurtham, Saptapadi, Banana-leaf Sadya.*
-  * **North Indian / Punjabi:** *Mehendi, Sangeet, Haldi, Baraat & Milni, Jaimala, Pheras.*
-  * **Tamil Brahmin:** *Nichayathartham, Oonjal, Kasi Yatra, Thali tying.*
-  * **Marwari / Jain:** *Mayra/Bhaat, Mahila Sangeet, Toran reception, Lagna Mandap Pheras.*
-* **Dietary Rigor:** Respectful enforcement for Jain menus (*strictly excludes root vegetables like potatoes, onions, and garlic, and enforces separate food preparation*).
-* **Acoustic Comfort Zoning:** Heuristic comfort rule keeping elderly seating >10 m away from high-decibel speakers and DJ consoles.
+## Smart Budget Optimizer
+
+EventForge connects event requirements and vendor selections with structured budget calculations.
+
+### Expense categories:
+* Venue and accommodation
+* Stage, mandap, and decoration
+* Flowers and lighting
+* Catering and beverages
+* Sound systems and entertainment
+* Photography and videography
+* Furniture and seating
+* Transportation and logistics
+* Invitations and guest services
+* Staffing and security
+* Taxes and applicable GST charges
+* Emergency contingency buffer
+
+### Budget intelligence:
+The planning workflow evaluates:
+* Estimated total expenditure
+* Cost per guest
+* Category-level allocations
+* Remaining budget
+* Potential cost overruns
+* Contingency requirements
+* Alternative packages and cost-saving opportunities
+
+The underlying financial engine uses integer paise for monetary calculations to avoid floating-point rounding errors in financial allocations.
 
 ---
 
-### 6. Adversarial Critic, Emergency Plan B & Judge Challenge
-* **19 Hard Invariants:** Pure code checks verifying budget sums, non-negative allocations, acyclic DAGs, capacity limits, obstacle clearances, and egress path distances.
-* **Emergency Plan B Simulator:** Models resilience against 3 live crises:
-  1. *Unseasonal Rainstorm:* Evaluates indoor protection vs. emergency waterproof pagoda canopy tenting.
-  2. *Caterer Cancellation (48h Notice):* Verifies shortlisted backup availability, estimated price delta, and reopens procurement.
-  3. *Guest Surge (+25% Attendance):* Evaluates catering cost increases and verifies exit door width sufficiency.
-* **Hackathon Judge Challenge:** Adversarial testing harness with 3 extreme presets (*The Budget Black Hole*, *The Fire Code Hazard*, *The Impossible Timeline*) showing mathematical proofs of failure and verifier interventions.
+## Event Design Showdown
+
+EventForge provides a framework for comparing alternative event concepts side by side:
+
+* **Plan A — Budget Smart**: Focuses on essential requirements, efficient spending, practical decoration choices, and contingency planning (-18% cost, +6 days slack).
+* **Plan B — Balanced Celebration**: Balances visual presentation, guest comfort, catering, entertainment, and manageable expenditure (recommended baseline).
+* **Plan C — Premium Experience**: Prioritizes elaborate decorations, premium presentation, enhanced lighting, entertainment, and an elevated guest experience (+22% investment).
+
+### Comparison criteria:
+Each proposal is evaluated using:
+* Estimated total cost and cost per guest
+* Decoration and venue concept
+* Catering and entertainment requirements
+* Budget difference
+* Risk indicators and assumptions
+* Schedule and operational implications
+* Advantages, disadvantages, and trade-offs
+
+Users can review the differences and explicitly approve a proposed plan before it replaces the active configuration.
 
 ---
 
-### 7. Change-Impact Engine & Transactional Rollback
-* **Pre-Flight Differential AST:** Proposing a change (e.g. *"Make it 400 guests"*) triggers an incremental recompute and outputs a detailed before/after diff (cost diff, moved tasks, broken layout checks).
-* **Lossless Version Control:** Every committed action creates a version snapshot with instantaneous **Undo**, **Redo**, or **Restore**.
+## Theme-Aware Vision Studio
+
+The Vision Studio connects event styling with an interactive venue representation. Rather than using one generic scene for every event, each theme has its own visual identity, relevant assets, decoration configuration, and lighting.
+
+### Supported theme concepts:
+
+1. **Traditional South Indian Temple**
+   * Temple-inspired decorative architecture
+   * Traditional mandap and 4 carved stone pillars
+   * Ceremonial brass Kuthuvilakku lamps with dynamic flame glow
+   * Fresh banana trees and marigold torans
+   * Sacred havan kund fire altar and rangoli floor mandala
+   * Warm golden ambient lighting
+
+2. **Mysuru Royal Wedding**
+   * Royal stage and ornate golden jharokha multi-arch backdrop
+   * Ivory, crimson, and antique gold color palettes
+   * Faceted crystal chandeliers and warm stage spotlights
+   * Royal velvet throneseats and red carpet aisle
+
+3. **Modern Luxury Contemporary**
+   * Contemporary champagne-gold geometric arch structures
+   * Suspended white wisteria and floral cascade canopy
+   * Mirrored plinths with tall calla lily vases
+   * Linear stage-lip LED cove glow strip and curved designer loveseat
+
+4. **Botanical Garden & Pergola**
+   * Botanical timber pergola with overhead crossbeam rafters
+   * Climbing ivy vines and blush garden roses
+   * Criss-crossed warm filament Edison fairy-light strings
+   * Rustic wooden garden benches and manicured lawn pavers
+
+5. **Festive Milestone Birthday**
+   * Cascading multi-color balloon garland arch (pink, cyan, gold, purple)
+   * Glowing neon script sign ("Celebrate")
+   * 3-Tier celebration birthday cake table with candles
+   * Colorful party gift display pedestal and celebration terrazzo floor
+
+6. **Executive Keynote & Corporate Gala**
+   * Presentation keynote stage with dual ultra-wide curved LED video walls
+   * Executive presenter podium with cyan LED underglow
+   * Overhead stage truss spotlights and dark graphite auditorium flooring
+
+### Decoration customization:
+Supports customization of stage/mandap styles, floral density, table linens, chair styles, aisle decorations, lighting atmospheres, and furniture placement. Theme selection transforms the actual 3D scene in real time.
 
 ---
 
-### 8. Event Day War Room Dispatcher
-* **Live Operational Dashboard:** One-tap toggle from planning CAD to mobile-friendly day-of-event execution.
-* **Next Milestone Radar:** Displays upcoming ceremony countdowns, locations, and expected attendees.
-* **1-Tap WhatsApp Alerts:** Instant pre-filled `https://wa.me/?text=...` alerts for caterers, photographers, and sound technicians requiring zero API keys.
-* **Hourly Run-of-Show Checklist:** Real-time sign-off sheet for coordinators and family leads.
+## 2D Floor Plan and 3D Synchronization
+
+The Vision Studio uses a shared layout configuration across its spatial views:
+
+* **2D Floor Plan (SVG Blueprint)**: Provides an architectural top-down representation of stage, seating, tables, buffet counters, entrances, and emergency exits.
+* **Interactive 3D Preview (WebGL)**: Visualizes venue geometry, elevations, materials, furniture, decorations, and lighting.
+* **Live Bidirectional Synchronization**:
+  * Dragging an element in 2D updates its position in 3D in real time.
+  * Adding or removing an element updates both views.
+  * Changing venue dimensions recalculates spatial boundaries.
+  * Theme switching updates the 3D meshes, textures, and lighting presets in-place.
+  * Spatial edits trigger clearance and egress validation rules.
 
 ---
 
-## EventForge Vision Studio
+## Cinematic Walkthrough
 
-EventForge Vision is the spatial planning and visual rehearsal component of the platform.
+EventForge offers camera-based venue exploration:
 
-![EventForge Vision Studio](docs/images/vision_floorplan.jpg)
-
-### 1. Structured Venue Model
-* **Venue Library:** AC Banquet Hall, Garden Lawn, Kalyana Mantapa, Community Ground, Rooftop Terrace.
-* **Custom Dimensions:** Allows entering exact meters (width × depth) with scaled door patterns.
-
-### 2. Computational Geometry & Dijkstra Egress
-* **Safety Rules:** 13 physical constraints covering obstacle collisions, minimum fire exit approach clearance (1.8 m buffer), noise buffer zones, and area-per-guest density thresholds.
-* **Dijkstra Evacuation Solver:** Discretizes the floor plan into a 0.5-metre grid and runs Dijkstra's algorithm to compute actual evacuation path lengths (≤ 30.0 m maximum travel distance).
-
-### 3. Planning Preview with Voice Narration
-* **Raycasted Canvas Walkthrough:** Client-side first-person walkthrough with dynamic lighting matching the schedule (morning, afternoon, golden hour, evening party).
-* **Web Speech Audio Narration:** Browser-native speech synthesis automatically narrating schedule milestones and spatial safety clearances aloud.
-* **"Tweak This Scene" Action Surface:** Quick buttons to modify layout coordinates directly beneath the player.
-* **Export:** One-click client-side WebM video recording and server-side animated GIF export.
-
-*(Disclaimer: Planning preview — not an exact representation of the venue. Dimensions are based on user-entered specifications and planning heuristics, not statutory architectural certifications).*
+* **Live 3D Walkthrough**: Real-time camera tour through milestone viewpoints (Grand Entrance Aisle, Stage/Mandap Close-up, Guest Seating, Dining & Buffet, and Full Venue Overview) with audio narration and interactive timeline scrubber.
+* **Rendered Walkthrough**: Exportable video/GIF generated from the current venue configuration.
+* **Version-Aware Outdated Tracking**: Identifies when changes to layout or theme outdate an earlier video render (`"⚠️ Render required after edits"`), with a 1-click **Re-Render Tour** workflow.
 
 ---
 
-## Algorithms and Technical Innovation
+## Smart Vendor Marketplace
 
-| Domain | Algorithm / Method | Engineering Purpose | Invariant Guaranteed |
-| :--- | :--- | :--- | :--- |
-| **Finance** | Hamilton–Hare Largest Remainder | Apportion budget across 10 categories | Sum of allocations + contingency = budget in whole paise |
-| **Risk** | 10,000-run Monte Carlo Simulation | Vectorized cost uncertainty modeling | Correlated log-normal shock & attendance elasticity |
-| **Scheduling** | DAG with Kahn's Topological Sort | Dependency ordering & cycle detection | Acyclic graph guarantee (Indegree = 0) |
-| **Operations** | Critical Path Method (CPM) | Early/Late boundaries & slack analysis | Earliest Feasible Date calculation; non-negative slack |
-| **Resource** | Serial Schedule Generation Scheme (SGS) | Multi-task coordinator capacity leveling | Daily coordinator effort <= 100% |
-| **Spatial** | Computational Geometry Solvers | Collision detection & door clearances | Zero bounding-box overlaps; 1.8m exit corridors |
-| **Safety** | Discretized 2D Dijkstra Pathfinding | Real evacuation walking distance | Walkable evacuation path <= 30.0 m to exit |
-| **Optimization** | Pareto Multi-Strategy Trade-offs | Systematic budget deficit reduction | Cost savings quantified against explicit compromises |
-| **Verification** | Metamorphic Fault-Injection Testing | Catch hallucinated or invalid plans | Verifier intercepts 100% of seeded adversarial plans |
-| **State** | Differential AST-style Recomputation | Incremental dependency graph caching | Pre-flight before/after diff with lossless rollback |
+EventForge organizes event-service requirements in one connected marketplace across 11 key service categories:
+
+* **Venue & Infrastructure**: Wedding halls, outdoor lawns, banquet spaces, tents, stages.
+* **Food & Hospitality**: Traditional South Indian sadya, multi-cuisine catering, Jain dietary segregation, live counters.
+* **Audio, Visuals & Entertainment**: Sound-system rentals, DJs, live musicians, stage/architectural lighting, LED video walls.
+* **Decoration & Production**: Mandap and stage specialists, floral decorators, chandeliers, linens, themed props.
+* **Photography & Cinematography**: Traditional photography, candid photography, cinematic video, drone coverage.
+* **Operations & Logistics**: Event coordinators, transportation, security, housekeeping, generator backup.
+
+### Vendor matching & financial integration:
+* Transparent scoring weights for budget compatibility, rating, and capacity.
+* Quote comparator with contract evidence extraction (advance terms, GST, overtime, cancellation policy).
+* Direct category-to-budget integration showing variances and avoiding double-counting.
+* WhatsApp and Email communication draft generator.
+
+---
+
+## What-If Event Simulator
+
+EventForge evaluates hypothetical changes before applying them to the active plan:
+
+* **Guest Surge (+100 guests)**: Evaluates per-plate food costs, seating density, and egress clearance.
+* **Catering Inflation (+15%)**: Estimates the effect of supplier price increases on overall budget and contingency reserves.
+* **Vendor Emergency Drop**: Simulates an emergency vendor cancellation, identifies affected activities, and auto-ranks backup replacements.
+* **Schedule Slippage**: Simulates Critical Path Method (CPM) DAG delays and timeline slippage.
+
+Includes an instant **1-Click Revert Simulation** button to safely return to baseline.
+
+---
+
+## Guest Flow and Venue Validation
+
+EventForge treats venue layout as an engineering discipline with deterministic safety checks:
+
+* **Layout checks**:
+  * Minimum aisle clearance (≥ 1.5m)
+  * Unobstructed emergency exit corridors
+  * Stage-to-audience safety buffers
+  * Maximum occupant density thresholds
+  * Element collision and boundary containment
+* **Guest-flow zoning**: VIP seating, general guest seating, dining circulation, and ceremonial corridors.
+
+---
+
+## Event-Day War Room
+
+The War Room supports live operational execution on event day:
+
+* **Incident management**: Tracks active disruptions (caterer delay, weather changes, power trips).
+* **Recovery planning**: Re-sequences tasks, calculates schedule slack, and organizes recovery playbooks (e.g. Monsoon rain outdoor-to-indoor shift, catering buffer deployment, backup generator switch).
+* **Communication dispatcher**: Generates vendor call sheets and confirmation dispatches.
+
+---
+
+## Event Production Pack
+
+Consolidates planning data into a professional, printable event production dossier:
+
+* Master run-of-show timeline schedule
+* 11-Category vendor emergency call sheet
+* Venue floor plan blueprint and spatial clearance sign-offs
+* Palette brief and decoration specifications
+* Event-day operational checklists and sign-off blocks
+* Clean `@media print` styling for one-click PDF export
+
+---
+
+## System Architecture
+
+```
+EVENTFORGE ARCHITECTURE
+│
+├── Public Homepage ────────── Dedicated Planning Dashboard
+│   └── AI Planning Assistant (Contextual NL Guidance)
+│
+├── Shared Event Specification (State Engine)
+│   ├── Deterministic Financial Engine (Integer Paise)
+│   ├── Critical-Path Scheduling Engine (CPM / DAG)
+│   └── Vendor Intelligence & Marketplace Layer
+│
+├── Deterministic Validation & Simulation
+│   ├── Spatial Safety & Clearance Verification
+│   └── Monte Carlo Budget Overrun Predictor
+│
+├── Visual Production Studio
+│   ├── 2D Architectural Floor Plan (SVG Blueprint)
+│   ├── Interactive 3D WebGL Venue (Three.js)
+│   ├── Dynamic In-Place Theme Switcher (Walk.setTheme)
+│   └── 6 Themed Celebration Visual Worlds
+│
+└── Event Operations
+    ├── Event-Day War Room & Incident Playbooks
+    └── One-Click Event Production Pack Dossier
+```
 
 ---
 
 ## Technology Stack
 
-* **Backend Framework:** Python 3.10+, Starlette (ASGI core), Uvicorn.
-* **Data Validation & Schemas:** Pydantic v2.
-* **Mathematical & Statistical Engines:** NumPy (vectorized Monte Carlo), Python integer arithmetic.
-* **Graph & Operations Research:** Native DAG Kahn's solver, Critical Path Method (CPM), Serial SGS scheduler.
-* **Spatial & Image Processing:** Pillow (PIL), Computational Geometry 2D matrix solvers.
-* **Document & Report Generation:** ReportLab (vector PDF generation), iCalendar (.ics generator).
-* **Database & Persistence:** SQLite3 (pure transactional JSON state snapshots).
-* **Frontend Architecture:** Vanilla JavaScript (ES6+), HTML5 Canvas, SVG vectors, CSS Variables (zero external heavy framework dependencies, zero CDN reliance).
-* **Audio & Media:** Web Speech API (`window.speechSynthesis`), MediaRecorder API (WebM video recording).
-
----
-
-## Event Planning Workflow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User
-    participant Intake as Semantic Intake
-    participant State as Event Spec State
-    participant Engines as Financial & Scheduling Engines
-    participant Vision as Vision Studio
-    participant Critic as Adversarial Verifier
-    participant WarRoom as War Room Dispatcher
-
-    User->>Intake: Enter event prompt in natural language
-    Intake->>State: Extract validated fields & tag assumptions
-    State->>Engines: Compute integer budget, Monte Carlo & CPM timeline
-    State->>Vision: Generate 2D floor plan & Dijkstra egress routes
-    Engines->>Critic: Run 19 hard invariants & Plan B crisis stress tests
-    Vision->>Critic: Check obstacle collisions & exit clearances
-    Critic-->>User: Display dashboard, budget breakdown & 3D walkthrough
-    User->>State: Propose change ("Make it 400 guests" or "Tweak scene")
-    State->>User: Display pre-flight Before/After diff report
-    User->>State: Approve change (commits transactional version snapshot)
-    State->>WarRoom: Switch to Event Day War Room & dispatch WhatsApp alerts
-```
-
----
-
-## Verification and Testing
-
-EventForge includes a built-in evaluation harness that runs directly inside the application (**Verify tab**) or via terminal commands.
-
-### Evaluation Suite Summary (31 / 31 Passed)
-* **Group A: Invariants (Property-style tests):**
-  * Exact paise summation across 200 random weight sets.
-  * Budget reconciliation across 40 randomized event specifications.
-  * Monte Carlo monotonicity (higher budget strictly reduces overrun probability).
-  * Monotonic what-if cost curves (adding guests never reduces expected cost).
-  * Topological DAG execution order across all 3 event types and 30 dates.
-  * Pareto optimizer invariant (3 distinct strategies with positive savings).
-  * Statutory tax audit verification (18% photography/venue/decor, 5% catering).
-* **Group B: Seeded Fault Injections (Deliberate attacks caught by verifier):**
-  * Infeasible date detected and earliest feasible date reported.
-  * Under-funded budget detected and flagged infeasible.
-  * Overlapping layout elements detected.
-  * Blocked fire exit doors caught with coordinate vectors.
-  * Undersized venue rejected based on guest density.
-  * Stage double-booking conflicts intercepted.
-  * Insufficient turnover duration between ceremony and lunch caught.
-  * Quotes with missing GST or missing cancellation policies flagged.
-* **Group C: Behavioral & End-to-End Tests:**
-  * Intake parser disambiguation and assumption tagging.
-  * Propose -> apply -> undo state rollback integrity.
-  * Full-coverage volunteer load leveling.
-  * Emergency Plan B crisis simulations (Rainstorm, Caterer drop, Guest surge).
-
-To run the full test suite locally:
-```powershell
-python -c "import sys; sys.path.insert(0, 'backend'); from engines.evals import run_all; res = run_all(); print('Passed:', res['passed'], '/', res['total']); assert res['passed'] == res['total']"
-```
-
----
-
-## Market Opportunity and Business Model
-
-### The Market Crisis
-* **$50 Billion+ Market:** India's wedding and event sector is among the largest in the world.
-* **High Emotional & Financial Stakes:** Average families invest significant savings into a single celebration.
-* **The Coordination Void:** Currently managed through disorganized WhatsApp chats, paper notes, and static Excel sheets, leading to budget inflation and last-minute logistical chaos.
-
-### Commercialization Vectors
-1. **B2C Freemium SaaS:** Free planning tier with monetization on premium branded PDF report exports, customized 3D venue renders, and multi-coordinator sync.
-2. **B2B Venue & Banquet Software:** Banquets and kalyana mantapas license EventForge to offer certified digital twins, interactive table arrangements, and safety compliance reports to booking clients.
-3. **Vendor Marketplace Commission:** Generating transaction fees on verified vendor bookings, contracts, and milestone-based escrow payments.
-
----
-
-## Future Enhancements
-
-* **Mobile LiDAR / AR Room Scanning:** Walk through an empty hall with an iPhone/Android device to automatically mesh room boundaries, pillars, and exit doors directly into Vision Studio.
-* **AI Autonomous Negotiation Agent:** Automated voice/chat agent that contacts shortlisted vendors to confirm availability, request quotation PDFs, and negotiate within budget allocations.
-* **Live Guest RSVP & Seating Companion App:** Mobile portal for attendees to confirm dietary requirements (e.g., Jain, vegan), view personalized table numbers, and receive ceremony alerts.
-* **Smart Escrow Contracts:** Milestone-based payment releases tied to verified completion of timeline tasks.
-
----
-
-## Responsible Use and Limitations
-
-* **Estimates, Not Quotations:** Vendor catalogs, baseline costs, and Monte Carlo curves are planning heuristics based on city tiers and seasonality. Real-world vendor quotations must replace them as received.
-* **Planning Previews, Not CAD Scans:** The 3D walkthrough and 2D floor plans are design aids based on user-entered dimensions. They do not replace on-site physical measurements or certified municipal fire clearance inspections.
-* **Tax Advisory:** Tax calculations reflect standard rates (18% GST for services/rentals, 5% for standalone catering). Users must verify invoice details with qualified chartered accountants.
-* **Deterministic Privacy:** Runs 100% locally on your machine with zero external data transmission required in deterministic mode.
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | HTML5, Modern CSS, Vanilla JavaScript (ES6+) |
+| **3D Visualization** | Three.js / WebGL, ACESFilmic Tone Mapping, Soft Shadow Maps |
+| **Backend API** | Python 3.10+, FastAPI / Starlette Framework, Uvicorn |
+| **Financial Planning** | Deterministic integer-paise allocation engines, Hamilton-Hare largest-remainder method |
+| **Risk Analysis** | Monte Carlo simulation with stochastic variance modeling |
+| **Scheduling** | Critical-Path Method (CPM) and Directed Acyclic Graph (DAG) topological sorting |
+| **Venue Layout** | 2D SVG vector rendering & 3D WebGL scene synchronization |
+| **Verification & Testing** | 31/31 Python evaluation tests, 10/10 seeded fault detections |
+| **Version Control** | Git & GitHub |
+| **Deployment** | Vercel (Frontend), Python Web Hosting (Backend) |
 
 ---
 
 ## Getting Started
 
-### 🌐 Instant Live Cloud Access (No Setup Required)
-Open the deployed application directly in your browser:
-👉 **[https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)**
+### Prerequisites
+
+* **Python 3.10** or higher
+* **Git**
+* A modern browser with **WebGL** support for interactive 3D features
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/somashekharvani/EventForge.git
+cd EventForge
+```
+
+### 2. Create a Python virtual environment
+
+**Windows:**
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+**Linux / macOS:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment variables (Optional)
+
+Create a local `.env` file if integrating external AI models:
+
+```env
+# Optional: Generative AI model integration
+GENAI_API_KEY=your_gemini_or_openai_api_key_here
+```
+
+*(Note: All core budgeting, scheduling, 3D visualization, and validation engines run 100% locally and deterministically without external API keys).*
+
+### 5. Start the application
+
+```bash
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+### 6. Open the application
+
+Visit [http://localhost:8000](http://localhost:8000) in your web browser.
 
 ---
 
-### Local Development Setup
+## Environment Configuration
 
-#### Prerequisites
-* **Operating System:** Windows, macOS, or Linux.
-* **Python:** Version 3.10 or newer (ensure *"Add Python to PATH"* is enabled during installation).
-* **Web Browser:** Google Chrome, Microsoft Edge, Safari, or Firefox.
+Optional integrations may require environment variables:
 
-#### Installation
-1. Clone the project repository:
-   ```powershell
-   git clone https://github.com/somashekharvani/EventForge.git
-   cd EventForge
-   ```
-2. Install Python dependencies:
-   ```powershell
-   pip install -r requirements.txt
-   ```
+```env
+# Optional: language-model integration
+GENAI_API_KEY=
+# Optional: external image or video generation
+IMAGE_GENERATION_API_KEY=
+VIDEO_GENERATION_API_KEY=
+```
 
-### Running the Application
-1. Start the backend server:
-   ```powershell
-   cd backend
-   python -m uvicorn app:app --port 8000
-   ```
-2. Open your browser and navigate to:
-   ```
-   http://localhost:8000
-   ```
-
-### 60-Second Quick Demo Flow
-1. Click the **"Mysuru wedding"** sample -> Click **Build my plan**.
-2. Open **Verify** -> Click **💥 1. The Budget Black Hole** under **Hackathon Judge Challenge**, then click **Run evaluation suite** (all 31 pass).
-3. Open **Budget** -> Inspect the **Pareto Strategy Cards** and **GST & Surcharge Audit**.
-4. Open **Vision Studio** -> Toggle **🔊 Narration: ON** and click **Play** -> Click **"Move dining away"** under **Tweak this scene** to observe the before/after change preview.
-5. Open **Overview** -> Toggle **⚡ Switch to Event Day War Room** to see the live milestone countdown and 1-tap WhatsApp vendor dispatch links.
+Never expose private API credentials in frontend JavaScript or commit them to GitHub.
 
 ---
 
-## Project Status & License
+## Example Workflow
 
-* **Project Status:** Production-ready Hackathon MVP. 31/31 evaluation cases passing. Full deterministic offline execution enabled.
-* **License:** [MIT License](LICENSE) — Open source for personal and educational use.
+1. **Intake**: Enter event requirements (e.g., Traditional South Indian wedding, 300 guests, ₹15 Lakhs).
+2. **Review Spec**: Verify extracted parameters and clarify missing constraints.
+3. **Showdown**: Compare Budget Smart, Balanced Celebration, and Premium Experience plans.
+4. **Theme Selection**: Select a theme (e.g., Traditional South Indian Temple).
+5. **Vision Studio**: Inspect concept images, floor plan, and the live 3D venue representation.
+6. **Customize**: Modify furniture positions on the 2D floor plan and watch 3D meshes synchronize.
+7. **Vendors**: Review catering, sound, photography, and decor options; compare quotations.
+8. **What-If Simulation**: Test guest surges (+100 guests) or price inflation (+15%) before committing.
+9. **Walkthrough**: Take a guided first-person walkthrough tour of the venue.
+10. **Export**: Export the Event Production Pack dossier and run-of-show schedule.
+
+---
+
+## Testing
+
+EventForge includes a comprehensive Python evaluation suite (`backend/engines/evals.py`):
+
+```bash
+python -c "from backend.engines.evals import run_all; print(run_all())"
+```
+
+To run the complete baseline test suite with detailed reporting:
+
+```bash
+python scratch/run_baseline.py
+```
+
+### Test verification areas:
+* Financial allocation exactness (integer paise, zero rounding drift)
+* Budget constraint handling and contingency bounds
+* Monte Carlo risk monotonicity
+* Critical-path DAG acyclicity and dependency ordering
+* Venue capacity and spatial clearance validation
+* Dynamic theme selection and persistence
+* 2D/3D layout bidirectional synchronization
+* What-if sandbox isolation and transactional rollback
+* Adversarial critic failure detection (10/10 seeded faults caught)
+
+---
+
+## Security and Reliability
+
+EventForge adheres to strict reliability principles:
+* **Server-side validation**: All mutations pass through strict schema validation.
+* **Deterministic calculations**: Financial, scheduling, and geometric algorithms avoid floating-point drift and LLM hallucinations.
+* **Auditability & Transactional Rollback**: Every state change is version-controlled with instant undo/redo.
+* **Safety Rules**: Enforces clearance, egress, and occupancy constraints based on standard architectural guidelines.
+
+---
+
+## Roadmap
+
+- [x] 6 Fully Theme-Aware 3D Visual Worlds
+- [x] Live Bidirectional 2D Floor Plan ⇄ 3D Scene Synchronization
+- [x] Photorealistic Concept Gallery with Verified Reference Photos
+- [x] Dynamic In-Place 3D Theme Switching (`Walk.setTheme`)
+- [x] 3-Way Event Design Showdown (Budget Smart, Balanced, Premium)
+- [x] Interactive What-If Operational Simulator
+- [x] 11-Category Smart Vendor Marketplace
+- [x] One-Click Event Production Pack Dossier Export
+- [x] Event-Day War Room & Live Incident Playbooks
+- [ ] Multi-user real-time collaborative editing via WebSockets
+- [ ] AR/VR venue walkthrough on mobile devices
+
+---
+
+## Contributing
+
+Contributions and suggestions are welcome!
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add amazing feature'`).
+4. Run the evaluation tests (`python -c "from backend.engines.evals import run_all; print(run_all())"`).
+5. Push to the branch (`git push origin feature/amazing-feature`).
+6. Open a Pull Request.
+
+---
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgements
+
+EventForge was developed for **Hack2skill Challenge 5 (Celebration & Event Planner)** as an exploration of neuro-symbolic AI event planning, deterministic algorithms, visual venue design, and explainable decision support.
+
+Thank you to everyone who provided feedback, tested workflows, and contributed ideas.
+
+**EventForge — Plan Smarter. Visualize Every Detail. Celebrate Without Limits.**
