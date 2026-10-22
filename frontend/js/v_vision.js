@@ -1,5 +1,8 @@
 "use strict";
-/* EventForge Vision studio: venue fit, photo/dimensions, editable floor plan with live validation, NL commands, walkthrough */
+/* EventForge Vision Studio: venue fit, photo/dimensions, editable floor plan with live validation,
+   NL commands, 3D photorealistic walkthrough with 6 celebration visual worlds,
+   and Photorealistic Concept Gallery showcasing user reference imagery.
+*/
 const VS = { sel: null, edits: null, orig: null, val: null, drag: null, photo: null, key: null, mode: "3d" };
 const LAB_T = { stage: "Stage", mandap: "Mandap", seating: "Seating", dining: "Dining", buffet: "Buffet", dance_floor: "Dance floor", activity: "Activity", reg_desk: "Registration", photo_booth: "Photo booth", first_aid: "First aid", kitchen: "Kitchen", backstage: "Backstage" };
 
@@ -23,7 +26,7 @@ VIEWS.vision = {
         <span class="chip ${val.ok ? "ok" : "bad"}" id="vs-badge">${val.summary.pass}/${val.summary.total} checks pass</span>
       </div>
       <p class="muted">
-        Explore your celebration venue in photorealistic 3D, take an eye-level walkthrough down the decorated aisle, or edit furniture on the 2D architectural blueprint with real-time clearance and egress validation.
+        Experience your celebration venue in photorealistic 3D across 6 authentic themes, take an eye-level walkthrough down the decorated aisle, or edit furniture on the 2D architectural blueprint with real-time clearance and egress validation.
       </p>
     </div>
 
@@ -48,7 +51,7 @@ VIEWS.vision = {
         <div class="card" id="box-v-2d" style="display:${VS.mode === '2d' ? 'block' : 'none'}">
           <div class="row">
             <h3 class="grow" style="margin:0">${esc(v.name)} <span class="muted small">${v.width} × ${v.depth} m</span></h3>
-            <span class="small muted">Drag items to test clearance</span>
+            <span class="small muted">Drag items to test clearance · Live 3D Sync</span>
           </div>
           <div id="vs-svg" class="mt">${this.svg(v, L)}</div>
           <div class="legend small mt">
@@ -73,14 +76,14 @@ VIEWS.vision = {
             Instruct the digital twin in plain English. EventForge parses commands, verifies spatial safety, and previews before applying:
           </p>
           <div class="row">
-            <input id="vs-cmd" class="grow" placeholder="e.g. move dining away from the entrance · make the stage bigger · add a photo booth · change theme to royal gold">
+            <input id="vs-cmd" class="grow" placeholder="e.g. move dining away from the entrance · make the stage bigger · add a photo booth · change theme to temple traditional">
             <button class="btn gold sm" id="vs-go">Preview Change</button>
           </div>
           <div class="row mt" style="gap:6px">
             <span class="tiny bold muted">Try:</span>
             <button class="btn ghost sm" data-cmd-sugg="move dining away from the entrance">Move dining away</button>
             <button class="btn ghost sm" data-cmd-sugg="make the stage bigger">Enlarge stage</button>
-            <button class="btn ghost sm" data-cmd-sugg="change decoration to white and gold">Royal Gold theme</button>
+            <button class="btn ghost sm" data-cmd-sugg="change decoration to temple traditional">Temple Mandap theme</button>
           </div>
         </div>
       </div>
@@ -125,7 +128,133 @@ VIEWS.vision = {
           <button class="btn ghost sm mt" id="cv-go">Apply Custom Dimensions</button>
         </div>
       </div>
-    </div>`;
+    </div>
+
+    <!-- ==========================================================================
+         PHOTOREALISTIC CONCEPT GALLERY & MATERIAL SPECIFICATIONS
+         ========================================================================== -->
+    <div class="card mt-l" style="padding:24px">
+      <div class="row mb">
+        <div>
+          <span class="tiny bold text-gold" style="letter-spacing:1px">PRODUCTION INSPIRATION &amp; MATERIAL DOSSIER</span>
+          <h2 style="font-size:22px;margin:2px 0">🖼️ Photorealistic Concept Gallery &amp; Decor Specifications</h2>
+        </div>
+        <span class="grow"></span>
+        <span class="tiny muted">Verified Reference Imagery</span>
+      </div>
+      <p class="small muted" style="margin-bottom:20px">
+        Examine authentic decor concepts curated for South Indian Temple and Royal Heritage celebrations.
+        Each concept includes verified floral procurement specifications, architectural elements, and lighting parameters:
+      </p>
+
+      <div class="grid g3" style="gap:20px">
+        <!-- Concept 1: Traditional South Indian Temple Mandap -->
+        <div class="concept-card" style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+          <div style="height:210px;overflow:hidden;position:relative">
+            <img src="/static/images/themes/temple_mandap_traditional.jpg" alt="Traditional South Indian Temple Mandap" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease">
+            <span class="chip sm ok" style="position:absolute;top:10px;left:10px;background:rgba(11,17,32,0.85);color:#fcfaf6">Temple Traditional</span>
+          </div>
+          <div style="padding:14px">
+            <h4 style="margin:0 0 4px">Traditional Temple Mandap &amp; Sacred Altar</h4>
+            <div class="tiny muted" style="line-height:1.4">
+              Carved stone pillars, banana-stem entrance framing, sacred havan kund with glowing embers, and ceremonial brass kuthuvilakku floor lamps.
+            </div>
+            <div class="row mt-tight" style="gap:6px">
+              <span class="swatch" style="background:#9b1c1f;width:16px;height:16px;border-radius:4px" title="Kanchipuram Red (#9b1c1f)"></span>
+              <span class="swatch" style="background:#d4a017;width:16px;height:16px;border-radius:4px" title="Temple Gold (#d4a017)"></span>
+              <span class="swatch" style="background:#2f5d3a;width:16px;height:16px;border-radius:4px" title="Banana Leaf Green (#2f5d3a)"></span>
+              <span class="swatch" style="background:#f6e7c1;width:16px;height:16px;border-radius:4px" title="Warm Ivory (#f6e7c1)"></span>
+            </div>
+            <button class="btn gold sm w-full mt" data-apply-theme="temple_red">Apply Temple Theme to 3D</button>
+          </div>
+        </div>
+
+        <!-- Concept 2: Sacred Floral Canopy Ceiling -->
+        <div class="concept-card" style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+          <div style="height:210px;overflow:hidden;position:relative">
+            <img src="/static/images/themes/temple_floral_canopy.png" alt="Sacred Floral Canopy Ceiling" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease">
+            <span class="chip sm info" style="position:absolute;top:10px;left:10px;background:rgba(11,17,32,0.85);color:#fcfaf6">Floral Canopy</span>
+          </div>
+          <div style="padding:14px">
+            <h4 style="margin:0 0 4px">Sacred Floral Canopy Ceiling</h4>
+            <div class="tiny muted" style="line-height:1.4">
+              Suspended ceiling grid with fresh tuberose (rajnigandha), jasmine (mallige), and marigold torans cascading over the central guest walkway.
+            </div>
+            <div class="row mt-tight" style="gap:6px">
+              <span class="swatch" style="background:#f28c28;width:16px;height:16px;border-radius:4px" title="Saffron Orange"></span>
+              <span class="swatch" style="background:#f6c026;width:16px;height:16px;border-radius:4px" title="Marigold Yellow"></span>
+              <span class="swatch" style="background:#ffffff;width:16px;height:16px;border-radius:4px;border:1px solid #cbd5e1" title="Jasmine White"></span>
+              <span class="swatch" style="background:#2e7d32;width:16px;height:16px;border-radius:4px" title="Mango Leaf"></span>
+            </div>
+            <button class="btn ghost sm w-full mt" data-apply-theme="marigold_heritage">Apply Heritage Floral</button>
+          </div>
+        </div>
+
+        <!-- Concept 3: Temple Sanctum Backdrop with Oil Lamps -->
+        <div class="concept-card" style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+          <div style="height:210px;overflow:hidden;position:relative">
+            <img src="/static/images/themes/temple_sanctum_lamps.jpg" alt="Temple Sanctum Backdrop with Oil Lamps" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease">
+            <span class="chip sm warn" style="position:absolute;top:10px;left:10px;background:rgba(11,17,32,0.85);color:#fcfaf6">Sanctum Deepams</span>
+          </div>
+          <div style="padding:14px">
+            <h4 style="margin:0 0 4px">Sanctum Backdrop with Tiered Lamps</h4>
+            <div class="tiny muted" style="line-height:1.4">
+              Dark granite stone finish backdrop framed with fresh banana stems, tiered brass deepams, and warm candlelit ambient illumination.
+            </div>
+            <div class="row mt-tight" style="gap:6px">
+              <span class="swatch" style="background:#d97706;width:16px;height:16px;border-radius:4px" title="Amber Flame"></span>
+              <span class="swatch" style="background:#b45309;width:16px;height:16px;border-radius:4px" title="Deep Terracotta"></span>
+              <span class="swatch" style="background:#451a03;width:16px;height:16px;border-radius:4px" title="Sanctum Stone"></span>
+              <span class="swatch" style="background:#15803d;width:16px;height:16px;border-radius:4px" title="Fresh Banana Foliage"></span>
+            </div>
+            <button class="btn gold sm w-full mt" data-apply-theme="temple_red">Apply Sanctum Ambiance</button>
+          </div>
+        </div>
+
+        <!-- Concept 4: Royal Palace Golden Jharokha Stage -->
+        <div class="concept-card" style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+          <div style="height:210px;overflow:hidden;position:relative">
+            <img src="/static/images/themes/royal_palace_arches.jpg" alt="Royal Palace Golden Jharokha Stage" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease">
+            <span class="chip sm ok" style="position:absolute;top:10px;left:10px;background:rgba(11,17,32,0.85);color:#fcfaf6">Mysuru Royal</span>
+          </div>
+          <div style="padding:14px">
+            <h4 style="margin:0 0 4px">Royal Palace Golden Jharokha Stage</h4>
+            <div class="tiny muted" style="line-height:1.4">
+              Ornate carved multi-arch palace stage with hanging faceted crystal chandeliers, antique gold filigree detailing, and royal velvet throneseats.
+            </div>
+            <div class="row mt-tight" style="gap:6px">
+              <span class="swatch" style="background:#c9a227;width:16px;height:16px;border-radius:4px" title="Antique Gold"></span>
+              <span class="swatch" style="background:#781d26;width:16px;height:16px;border-radius:4px" title="Royal Velvet Maroon"></span>
+              <span class="swatch" style="background:#8c6d1f;width:16px;height:16px;border-radius:4px" title="Carved Brass Trim"></span>
+              <span class="swatch" style="background:#fdfbf7;width:16px;height:16px;border-radius:4px;border:1px solid #cbd5e1" title="Silk Drapery"></span>
+            </div>
+            <button class="btn gold sm w-full mt" data-apply-theme="royal_gold">Apply Royal Palace Theme</button>
+          </div>
+        </div>
+
+        <!-- Concept 5: Heritage Courtyard Banquet at Dusk -->
+        <div class="concept-card" style="background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)">
+          <div style="height:210px;overflow:hidden;position:relative">
+            <img src="/static/images/themes/royal_courtyard_dusk.jpg" alt="Heritage Courtyard Banquet at Dusk" style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s ease">
+            <span class="chip sm info" style="position:absolute;top:10px;left:10px;background:rgba(11,17,32,0.85);color:#fcfaf6">Courtyard Dusk</span>
+          </div>
+          <div style="padding:14px">
+            <h4 style="margin:0 0 4px">Heritage Courtyard Banquet at Dusk</h4>
+            <div class="tiny muted" style="line-height:1.4">
+              Umaid Bhawan &amp; Mysuru style open-air palace courtyard with illuminated sandstone domes, round dining tables with candelabras, and dusk twilight.
+            </div>
+            <div class="row mt-tight" style="gap:6px">
+              <span class="swatch" style="background:#1e1b4b;width:16px;height:16px;border-radius:4px" title="Dusk Indigo"></span>
+              <span class="swatch" style="background:#e0a458;width:16px;height:16px;border-radius:4px" title="Sunset Sandstone"></span>
+              <span class="swatch" style="background:#f5e6c8;width:16px;height:16px;border-radius:4px" title="Warm Candlelight"></span>
+              <span class="swatch" style="background:#064e3b;width:16px;height:16px;border-radius:4px" title="Courtyard Cypress"></span>
+            </div>
+            <button class="btn ghost sm w-full mt" data-apply-theme="royal_gold">Apply Dusk Courtyard Ambiance</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
   },
 
   moved() {
@@ -200,6 +329,10 @@ VIEWS.vision = {
         btn2d.classList.remove("active");
         if (box3d) box3d.style.display = "block";
         if (box2d) box2d.style.display = "none";
+        // Synchronize 3D elements with any moves made in 2D
+        if (typeof Walk !== "undefined") {
+          Walk.syncElements(VS.edits);
+        }
       };
       btn2d.onclick = () => {
         VS.mode = "2d";
@@ -223,6 +356,10 @@ VIEWS.vision = {
           b.textContent = `${VS.val.summary.pass}/${VS.val.summary.total} checks pass`;
         }
         redrawSvg();
+        // Live bidirectional 3D synchronization
+        if (typeof Walk !== "undefined") {
+          Walk.syncElements(VS.edits);
+        }
       } catch (e) { toast(e.message, "bad"); }
     }, 180);
 
@@ -259,12 +396,14 @@ VIEWS.vision = {
 
         g.onpointermove = m => {
           if (!VS.drag) return;
-          const r = pt(svg, m);
-          e.x = Math.max(0, Math.min(v.width - e.w, Math.round((r.x - VS.drag.dx) * 4) / 4));
-          e.y = Math.max(0, Math.min(v.depth - e.h, Math.round((r.y - VS.drag.dy) * 4) / 4));
-          const rc = g.querySelector("rect"), tx = g.querySelector("text");
-          if (rc) { rc.setAttribute("x", e.x); rc.setAttribute("y", e.y); }
-          if (tx) { tx.setAttribute("x", e.x + .3); tx.setAttribute("y", e.y + .9); }
+          const p2 = pt(svg, m);
+          e.x = Math.round(Math.max(0, Math.min(v.width - e.w, p2.x - VS.drag.dx)) * 4) / 4;
+          e.y = Math.round(Math.max(0, Math.min(v.depth - e.h, p2.y - VS.drag.dy)) * 4) / 4;
+          g.querySelector("rect").setAttribute("x", e.x);
+          g.querySelector("rect").setAttribute("y", e.y);
+          const t = g.querySelector("text");
+          if (t) { t.setAttribute("x", e.x + .3); t.setAttribute("y", e.y + .9); }
+          refreshButtons();
         };
 
         g.onpointerup = () => {
@@ -291,6 +430,9 @@ VIEWS.vision = {
       redrawSvg();
       insp();
       refreshButtons();
+      if (typeof Walk !== "undefined") {
+        Walk.syncElements(VS.edits);
+      }
     };
 
     const resBtn = $("#vs-reset", root);
@@ -321,10 +463,18 @@ VIEWS.vision = {
       }
     });
 
+    // Concept Gallery Theme Application
+    $$("[data-apply-theme]", root).forEach(btn => {
+      btn.onclick = () => {
+        const themeId = btn.dataset.applyTheme;
+        propose({ theme_id: themeId }, `Change theme to ${themeId.replace('_', ' ')}`);
+      };
+    });
+
     // Mount 3D Walkthrough & Realistic Renderer
     const walkBox = $("#walk-box", root);
     if (walkBox) {
-      Walk.mount(walkBox, p, "3d");
+      Walk.mount(walkBox, p, VS.mode);
     }
   }
 };

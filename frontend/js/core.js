@@ -40,6 +40,8 @@ const VIEWS = {};      // name -> {render(plan)->html, bind(root,plan)}
 
 const TABS = [
   ["overview", "Overview", "📊"],
+  ["showdown", "Plan Showdown", "⚖️"],
+  ["simulator", "What-If Simulator", "🔮"],
   ["intake", "New / Edit Plan", "📝"],
   ["budget", "Budget & Risk", "💰"],
   ["timeline", "Timeline & Tasks", "⏱️"],
@@ -47,8 +49,9 @@ const TABS = [
   ["ideas", "Ideas & Themes", "🎨"],
   ["vision", "Vision Studio", "🏛️"],
   ["verify", "Verify & Stress Test", "🛡️"],
+  ["production", "Production Pack", "📦"],
   ["community", "Community Toolkit", "👥"],
-  ["history", "Versions & Export", "📜"],
+  ["history", "Versions & History", "📜"],
 ];
 
 async function api(path, opts = {}) {

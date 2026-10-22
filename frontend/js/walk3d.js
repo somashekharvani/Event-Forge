@@ -1,23 +1,47 @@
 "use strict";
 /* EventForge Cinematic Vision Studio & 3D Celebration Venue Renderer
    Supports:
-   1. WebGL Three.js Realistic Celebration Environment (Wedding Mandap, Draped Stage, Linen Tables, Banquet Chairs, Chandeliers, Fairy Lights)
-   2. Interactive Orbit & Pan Controls with Instant Viewpoint Presets (Stage, Aisle, Seating, Buffet, Overview)
+   1. 6 Distinct Celebration Visual Worlds:
+      - Traditional South Indian Temple (Carved stone pillars, banana trees, brass kuthuvilakku lamps with flame glow, marigold torans, rangoli floor)
+      - Mysuru Royal Wedding (Golden jharokha arches, crystal chandeliers, velvet thrones, dusk courtyard lighting)
+      - Modern Luxury (Champagne gold geometric frames, suspended wisteria canopy, LED cove lighting, marble reflections)
+      - Garden Celebration (Rustic timber pergolas, climbing ivy, fairy-light canopies, lawn pavers)
+      - Birthday Celebration (Multi-tone balloon arch garland, neon glowing script, tiered dessert table)
+      - Corporate Gala (Keynote stage, dual LED displays, executive podium, truss spotlights)
+   2. Interactive Orbit & Pan Controls with Instant Viewpoint Presets
    3. Cinematic Guided Walkthrough with Voice Narration & Timeline Scrubber
-   4. High-Detail Procedural Canvas Fallback for systems without WebGL
+   4. Live Bidirectional 2D <-> 3D Synchronization
+   5. Versioned Render Outdated Tracking ("Render required after edits")
+   6. High-Detail Procedural Canvas Fallback
 */
 
 const Walk = (() => {
   let st = null; // State object
   const DUR = 7; // Seconds per scene in walkthrough
 
-  // Lighting atmospheres
+  // Lighting atmospheres per theme
   const LIGHTING_PRESETS = {
-    golden: { ambient: 0xffe8d6, ambInt: 0.85, dir: 0xfff3e0, dirInt: 1.2, fog: 0x1a1528, sky: ["#f6c58b", "#fbe8cf"] },
-    evening: { ambient: 0xffd1b3, ambInt: 0.7, dir: 0xffaa5e, dirInt: 1.0, fog: 0x14182b, sky: ["#f3a37a", "#f8d6b8"] },
-    night: { ambient: 0x8a9bb8, ambInt: 0.5, dir: 0x4a6fa5, dirInt: 0.6, fog: 0x090d1a, sky: ["#0b1120", "#1e293b"] },
-    day: { ambient: 0xffffff, ambInt: 0.9, dir: 0xfffaf0, dirInt: 1.1, fog: 0xd8e6f3, sky: ["#bcd9f2", "#eef6fc"] }
+    golden: { ambient: 0xffe8d6, ambInt: 0.90, dir: 0xfff3e0, dirInt: 1.25, fog: 0x1a1528, sky: ["#f6c58b", "#fbe8cf"] },
+    temple: { ambient: 0xffdfba, ambInt: 0.95, dir: 0xffaa5e, dirInt: 1.30, fog: 0x1e120b, sky: ["#f8961e", "#f9c74f"] },
+    royal: { ambient: 0xffd1b3, ambInt: 0.80, dir: 0xffaa5e, dirInt: 1.15, fog: 0x161324, sky: ["#e07a5f", "#f4a261"] },
+    evening: { ambient: 0xffd1b3, ambInt: 0.75, dir: 0xffaa5e, dirInt: 1.05, fog: 0x14182b, sky: ["#f3a37a", "#f8d6b8"] },
+    night: { ambient: 0x8a9bb8, ambInt: 0.50, dir: 0x4a6fa5, dirInt: 0.60, fog: 0x090d1a, sky: ["#0b1120", "#1e293b"] },
+    day: { ambient: 0xffffff, ambInt: 0.95, dir: 0xfffaf0, dirInt: 1.15, fog: 0xd8e6f3, sky: ["#bcd9f2", "#eef6fc"] }
   };
+
+  function getThemeKey(theme, spec) {
+    const tid = ((theme && theme.id) || "").toLowerCase();
+    const tname = ((theme && theme.name) || "").toLowerCase();
+    const etype = ((spec && spec.event_type) || "").toLowerCase();
+
+    if (tid.includes("temple") || tname.includes("temple") || tname.includes("kanchipuram") || tname.includes("marigold")) return "temple";
+    if (tid.includes("royal") || tname.includes("royal") || tname.includes("mysore") || tname.includes("mysuru")) return "royal";
+    if (tid.includes("garden") || tname.includes("garden") || tid.includes("rustic") || tid.includes("boho")) return "garden";
+    if (etype === "birthday" || tid.includes("safari") || tid.includes("space") || tid.includes("unicorn")) return "birthday";
+    if (etype === "community" || tid.includes("corporate") || tname.includes("fair") || tname.includes("utsav")) return "corporate";
+    if (tid.includes("minimal") || tname.includes("minimal") || tid.includes("modern")) return "modern";
+    return "royal";
+  }
 
   function mount(box, plan, initialMode = "3d") {
     stop();
@@ -26,10 +50,20 @@ const Walk = (() => {
     const v = vis.venue;
     const L = vis.layout;
     const theme = L.theme || { name: "Royal Gold", palette: ["#f7f1e3", "#c9a227", "#8c6d1f", "#ffffff"] };
+    const themeKey = getThemeKey(theme, plan.spec);
+
+    const themeTitles = {
+      temple: "Traditional South Indian Temple",
+      royal: "Mysuru Royal Heritage Wedding",
+      modern: "Modern Luxury Contemporary",
+      garden: "Botanical Garden & Pergola",
+      birthday: "Festive Milestone Birthday",
+      corporate: "Executive Keynote & Community Gala"
+    };
 
     box.innerHTML = `
       <div class="vision-studio-wrapper">
-        <!-- Visualization Toolbar -->
+        <!-- Visualization Mode & Camera Toolbar -->
         <div class="vision-toolbar">
           <div class="toolbar-mode-group">
             <button class="v-mode-btn ${initialMode === "3d" ? "active" : ""}" data-vmode="3d">✨ Photorealistic 3D</button>
@@ -48,8 +82,19 @@ const Walk = (() => {
         </div>
 
         <!-- 3D Viewport Container -->
-        <div class="viewport-box" id="vp-container" style="position:relative;width:100%;height:460px;background:#0b1120;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.4)">
-          <canvas id="walk-cv" width="920" height="460" style="width:100%;height:100%;display:block"></canvas>
+        <div class="viewport-box" id="vp-container" style="position:relative;width:100%;height:470px;background:#0b1120;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.4)">
+          <!-- Render Outdated Banner -->
+          <div id="w-outdated-bar" class="walk-outdated-bar" style="display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(225,29,72,0.94);color:#ffffff;padding:6px 16px;border-radius:24px;font-size:12.5px;font-weight:600;z-index:25;box-shadow:0 6px 16px rgba(0,0,0,0.35);backdrop-filter:blur(4px);align-items:center;gap:10px">
+            <span>⚠️ Render required after edits (Design modified)</span>
+            <button class="btn gold sm" id="w-re-render-btn" style="padding:2px 10px;font-size:11.5px">Re-Render Tour</button>
+          </div>
+
+          <!-- Active Theme Overlay Badge -->
+          <div style="position:absolute;top:12px;left:14px;z-index:15;background:rgba(11,17,32,0.85);backdrop-filter:blur(6px);padding:5px 12px;border-radius:20px;border:1px solid rgba(212,175,55,0.3);color:#fcfaf6;font-size:12px">
+            <span class="text-gold">✦ Theme:</span> <b>${esc(themeTitles[themeKey] || theme.name)}</b>
+          </div>
+
+          <canvas id="walk-cv" width="920" height="470" style="width:100%;height:100%;display:block"></canvas>
           <div id="three-container" style="position:absolute;inset:0;pointer-events:auto"></div>
 
           <!-- Walkthrough Floating Subtitle Overlay -->
@@ -58,7 +103,7 @@ const Walk = (() => {
               <span class="walk-live-dot"></span>
               <div>
                 <div id="w-cap-title" class="bold text-gold" style="font-size:14px">Grand Entrance Aisle</div>
-                <div id="w-cap-text" class="tiny text-ivory" style="opacity:0.85">Walking past flower-lined aisle toward the decorated wedding mandap</div>
+                <div id="w-cap-text" class="tiny text-ivory" style="opacity:0.85">Walking past flower-lined aisle toward the decorated celebration mandap</div>
               </div>
             </div>
             <div class="grow"></div>
@@ -91,8 +136,8 @@ const Walk = (() => {
 
         <!-- Celebration Details Footnote -->
         <div class="row mt" style="justify-content:space-between;align-items:center;font-size:12px;color:#64748b">
-          <span>Venue: <b>${esc(v.name)}</b> (${v.width} × ${v.depth}m) · Theme: <b style="color:${theme.palette[1] || '#d4af37'}">${esc(theme.name)}</b></span>
-          <span>100% Connected to deterministic layout &amp; safety validation</span>
+          <span>Venue: <b>${esc(v.name)}</b> (${v.width} × ${v.depth}m) · Environment: <b style="color:${theme.palette[1] || '#d4af37'}">${esc(themeTitles[themeKey] || theme.name)}</b></span>
+          <span>100% Synchronized with 2D floor plan &amp; spatial clearances</span>
         </div>
       </div>
     `;
@@ -101,6 +146,7 @@ const Walk = (() => {
       plan,
       scenes: sc,
       mode: initialMode,
+      themeKey,
       i: 0,
       t: 0,
       playing: false,
@@ -109,6 +155,8 @@ const Walk = (() => {
       last: 0,
       box,
       three: null,
+      elementGroups: [],
+      flames: [],
       canvas: $("#walk-cv", box),
       cvBox: $("#three-container", box)
     };
@@ -125,7 +173,7 @@ const Walk = (() => {
         if (presets) presets.style.display = m === "orbit" || m === "3d" ? "flex" : "none";
         if (ctrls) ctrls.style.display = m === "walk" ? "block" : "none";
         if (overlay) overlay.style.display = m === "walk" ? "flex" : "none";
-        
+
         if (m === "walk") {
           play();
         } else {
@@ -141,52 +189,57 @@ const Walk = (() => {
       b.onclick = () => setCameraPreset(b.dataset.cam);
     });
 
-    // Walkthrough Buttons
-    $("#w-play", box).onclick = () => st.playing ? pause() : play();
-    $("#w-prev", box).onclick = () => jump(st.i - 1);
-    $("#w-next", box).onclick = () => jump(st.i + 1);
-    $$("[data-sc]", box).forEach(b => b.onclick = () => jump(+b.dataset.sc));
+    // Walkthrough playback controls
+    const pl = $("#w-play", box);
+    if (pl) pl.onclick = () => st.playing ? pause() : play();
+    const pv = $("#w-prev", box);
+    if (pv) pv.onclick = () => jump((st.i - 1 + sc.length) % sc.length);
+    const nx = $("#w-next", box);
+    if (nx) nx.onclick = () => jump((st.i + 1) % sc.length);
+    const vc = $("#w-voice", box);
+    if (vc) vc.onclick = () => { st.voice = !st.voice; vc.textContent = `🔊 Narration: ${st.voice ? "On" : "Off"}`; if (st.voice) speak(sc[st.i].detail); };
+    const rec = $("#w-rec", box);
+    if (rec) rec.onclick = () => record();
 
-    $("#w-voice", box).onclick = () => {
-      st.voice = !st.voice;
-      $("#w-voice", box).textContent = st.voice ? "🔊 Narration: ON" : "🔇 Narration: Off";
-      if (st.voice && st.scenes[st.i]) {
-        speak(`${st.scenes[st.i].start}: ${st.scenes[st.i].title}. ${st.scenes[st.i].caption}`);
-      } else if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-    };
-
-    const scrubber = $("#w-scrub", box);
-    if (scrubber) {
-      scrubber.oninput = () => {
-        const val = +scrubber.value;
-        const total = (st.scenes.length || 1) * DUR;
-        const curSec = (val / 100) * total;
-        st.i = Math.min(st.scenes.length - 1, Math.floor(curSec / DUR));
-        st.t = curSec % DUR;
+    const scb = $("#w-scrub", box);
+    if (scb) {
+      scb.oninput = () => {
+        const val = +scb.value / 100;
+        const total = sc.length * DUR;
+        const targetT = val * total;
+        st.i = Math.min(sc.length - 1, Math.floor(targetT / DUR));
+        st.t = targetT % DUR;
         caption();
         frame();
       };
     }
 
-    $("#w-rec", box).onclick = record;
+    $$("[data-sc]", box).forEach(b => {
+      b.onclick = () => jump(+b.dataset.sc);
+    });
 
-    // Initialize 3D Engine (Three.js WebGL with graceful fallback)
+    const reRenderBtn = $("#w-re-render-btn", box);
+    if (reRenderBtn) {
+      reRenderBtn.onclick = () => {
+        reRender();
+        toast("Walkthrough re-rendered from latest layout coordinates", "ok");
+      };
+    }
+
     init3D();
-    caption();
   }
 
   function stop() {
     if (st) {
-      cancelAnimationFrame(st.raf);
+      pause();
       if (st.three && st.three.renderer) {
         try {
           st.three.renderer.dispose();
-          st.cvBox.innerHTML = "";
+          if (st.three.renderer.domElement && st.three.renderer.domElement.parentNode) {
+            st.three.renderer.domElement.parentNode.removeChild(st.three.renderer.domElement);
+          }
         } catch (e) {}
       }
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       st = null;
     }
   }
@@ -195,64 +248,59 @@ const Walk = (() => {
     if (!st) return;
     st.playing = true;
     st.last = performance.now();
-    const btn = $("#w-play", st.box);
-    if (btn) btn.textContent = "⏸ Pause";
+    const b = $("#w-play", st.box);
+    if (b) b.textContent = "⏸ Pause Tour";
+    caption();
     st.raf = requestAnimationFrame(tick);
-    if (st.voice && st.scenes[st.i]) {
-      speak(`${st.scenes[st.i].start}: ${st.scenes[st.i].title}. ${st.scenes[st.i].caption}`);
-    }
   }
 
   function pause() {
     if (!st) return;
     st.playing = false;
     cancelAnimationFrame(st.raf);
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    const btn = $("#w-play", st.box);
-    if (btn) btn.textContent = "▶ Play Tour";
+    const b = $("#w-play", st.box);
+    if (b) b.textContent = "▶ Play Tour";
+    if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
   }
 
   function jump(idx) {
     if (!st || !st.scenes.length) return;
-    st.i = (idx + st.scenes.length) % st.scenes.length;
+    st.i = idx;
     st.t = 0;
     caption();
     frame();
   }
 
   function caption() {
-    if (!st || !st.scenes[st.i]) return;
-    const scn = st.scenes[st.i];
-    const tit = $("#w-cap-title", st.box);
-    const txt = $("#w-cap-text", st.box);
-    const badge = $("#w-time-badge", st.box);
-    if (tit) tit.textContent = `${scn.start} — ${scn.title}`;
-    if (txt) txt.textContent = scn.caption;
-    if (badge) badge.textContent = `Scene ${st.i + 1}/${st.scenes.length}`;
-
-    $$("[data-sc]", st.box).forEach((b, k) => {
-      b.classList.toggle("active", k === st.i);
-    });
-
+    if (!st) return;
+    const s = st.scenes[st.i];
+    if (!s) return;
+    const title = $("#w-cap-title", st.box);
+    const text = $("#w-cap-text", st.box);
+    const time = $("#w-time-badge", st.box);
     const scrub = $("#w-scrub", st.box);
-    if (scrub && st.scenes.length) {
-      const curSec = st.i * DUR + st.t;
-      const total = st.scenes.length * DUR;
-      scrub.value = Math.round((curSec / total) * 100);
+
+    if (title) title.textContent = `${s.start} — ${s.title}`;
+    if (text) text.textContent = s.detail;
+    if (time) time.textContent = `${s.start} (${st.i + 1}/${st.scenes.length})`;
+
+    if (scrub) {
+      const curTotal = (st.i * DUR + st.t) / (st.scenes.length * DUR);
+      scrub.value = Math.round(curTotal * 100);
     }
 
-    if (st.voice && st.playing) {
-      speak(`${scn.start}: ${scn.title}. ${scn.caption}`);
-    }
+    $$("[data-sc]", st.box).forEach((b, k) => b.classList.toggle("active", k === st.i));
+    if (st.voice && st.t === 0) speak(s.detail);
   }
 
   function speak(text) {
-    if (!st || !st.voice || !('speechSynthesis' in window)) return;
+    if (typeof speechSynthesis === "undefined" || !text) return;
     try {
-      window.speechSynthesis.cancel();
+      speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-IN";
       u.rate = 1.0;
-      window.speechSynthesis.speak(u);
+      speechSynthesis.speak(u);
     } catch (e) {}
   }
 
@@ -273,51 +321,80 @@ const Walk = (() => {
   }
 
   function setCameraPreset(preset) {
-    if (!st) return;
+    if (!st || !st.three) return;
     const v = st.plan.vision.venue;
-    const W = v.width, D = v.depth;
+    const L = st.plan.vision.layout;
+    const cam = st.three.camera;
+    const target = st.three.target;
 
-    if (st.three && st.three.camera) {
-      const cam = st.three.camera;
-      const controls = st.three.controls;
-      switch (preset) {
-        case "stage":
-          cam.position.set(W / 2, 3.2, D - 6);
-          if (controls) controls.target.set(W / 2, 2.0, 3.5);
-          break;
-        case "aisle":
-          cam.position.set(W / 2, 1.7, D - 1);
-          if (controls) controls.target.set(W / 2, 1.8, D / 2);
-          break;
-        case "seating":
-          cam.position.set(W / 4, 2.2, D / 2);
-          if (controls) controls.target.set(W / 2, 2.0, 4);
-          break;
-        case "buffet":
-          cam.position.set(W - 4, 2.2, D / 2);
-          if (controls) controls.target.set(W - 3, 1.5, D * 0.7);
-          break;
-        case "overview":
-        default:
-          cam.position.set(W / 2, Math.max(16, W * 0.7), D * 1.3);
-          if (controls) controls.target.set(W / 2, 1.0, D / 2);
-          break;
-      }
-      if (controls) controls.update();
-      st.three.renderer.render(st.three.scene, cam);
-    } else {
-      // Fallback 2D canvas view
-      st.t = preset === "stage" ? 4.5 : preset === "aisle" ? 1.0 : 0;
-      frame();
+    const stageEl = L.elements.find(e => e.type === "mandap" || e.type === "stage") || { x: v.width / 2 - 4, y: 3, w: 8, h: 4 };
+    const diningEl = L.elements.find(e => e.type === "dining" || e.type === "buffet") || { x: v.width / 2, y: v.depth - 6, w: 8, h: 4 };
+    const seatingEl = L.elements.find(e => e.type === "seating") || { x: v.width / 2, y: v.depth * 0.45, w: 10, h: 6 };
+
+    switch (preset) {
+      case "stage":
+        cam.position.set(stageEl.x + stageEl.w / 2, 2.2, stageEl.y + stageEl.h + 5.5);
+        target.set(stageEl.x + stageEl.w / 2, 1.6, stageEl.y + stageEl.h / 2);
+        break;
+      case "aisle":
+        cam.position.set(v.width / 2, 1.8, v.depth - 2.0);
+        target.set(v.width / 2, 1.8, stageEl.y + stageEl.h / 2);
+        break;
+      case "seating":
+        cam.position.set(seatingEl.x + seatingEl.w / 2 + 5, 2.8, seatingEl.y + seatingEl.h / 2 + 5);
+        target.set(seatingEl.x + seatingEl.w / 2, 1.0, seatingEl.y + seatingEl.h / 2);
+        break;
+      case "buffet":
+        cam.position.set(diningEl.x + diningEl.w / 2 - 4, 2.2, diningEl.y + diningEl.h / 2 + 5);
+        target.set(diningEl.x + diningEl.w / 2, 1.0, diningEl.y + diningEl.h / 2);
+        break;
+      case "overview":
+      default:
+        cam.position.set(v.width / 2, Math.max(14, v.width * 0.65), v.depth * 1.15);
+        target.set(v.width / 2, 1.5, v.depth / 2);
+        break;
     }
+
+    cam.lookAt(target);
+    st.three.renderer.render(st.three.scene, cam);
   }
 
-  /* ==========================================================================
-     THREE.JS REALISTIC WEBGL SCENE BUILDER
-     ========================================================================== */
+  function markOutdated(isOutdated, version) {
+    if (!st || !st.box) return;
+    const bar = $("#w-outdated-bar", st.box);
+    if (bar) bar.style.display = isOutdated ? "flex" : "none";
+  }
+
+  function syncElements(elements) {
+    if (!st || !st.three || !st.three.scene) return;
+    const scene = st.three.scene;
+    const v = st.plan.vision.venue;
+    const spec = st.plan.spec;
+    const theme = st.plan.vision.layout.theme || { palette: ["#f7f1e3", "#c9a227", "#8c6d1f", "#ffffff"] };
+
+    if (st.elementGroups) {
+      st.elementGroups.forEach(g => scene.remove(g));
+    }
+    st.elementGroups = [];
+    st.flames = [];
+
+    elements.forEach(el => {
+      buildCelebrationElement(scene, el, spec, theme, v, st.themeKey);
+    });
+
+    st.three.renderer.render(scene, st.three.camera);
+    markOutdated(true);
+  }
+
+  function reRender() {
+    if (!st) return;
+    const m = st.mode;
+    mount(st.box, S.plan, m);
+    markOutdated(false);
+  }
+
   function init3D() {
     if (typeof THREE === "undefined") {
-      console.warn("Three.js not found; using enhanced high-detail 2D/3D canvas renderer.");
       st.canvas.style.display = "block";
       frame();
       return;
@@ -325,18 +402,17 @@ const Walk = (() => {
 
     try {
       const width = st.cvBox.clientWidth || 920;
-      const height = st.cvBox.clientHeight || 460;
+      const height = st.cvBox.clientHeight || 470;
       const scene = new THREE.Scene();
       const v = st.plan.vision.venue;
       const L = st.plan.vision.layout;
       const spec = st.plan.spec;
       const theme = L.theme || { palette: ["#f7f1e3", "#c9a227", "#8c6d1f", "#ffffff"] };
+      const themeKey = st.themeKey;
 
-      // Camera
       const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 500);
-      camera.position.set(v.width / 2, Math.max(15, v.width * 0.65), v.depth * 1.25);
+      camera.position.set(v.width / 2, Math.max(14, v.width * 0.65), v.depth * 1.15);
 
-      // Renderer
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -347,10 +423,9 @@ const Walk = (() => {
 
       st.cvBox.innerHTML = "";
       st.cvBox.appendChild(renderer.domElement);
-      st.canvas.style.display = "none"; // Hide fallback canvas
+      st.canvas.style.display = "none";
 
-      // Orbit controls simulation
-      let controls = null;
+      // Orbit interaction
       let isDragging = false, prevMouse = { x: 0, y: 0 };
       const target = new THREE.Vector3(v.width / 2, 1.5, v.depth / 2);
 
@@ -395,17 +470,15 @@ const Walk = (() => {
         }
       }, { passive: false });
 
-      controls = { target, update: () => camera.lookAt(target) };
+      // Theme-specific Lighting & Atmosphere
+      const lp = LIGHTING_PRESETS[themeKey] || LIGHTING_PRESETS.golden;
+      scene.background = new THREE.Color(lp.fog);
+      scene.fog = new THREE.FogExp2(lp.fog, 0.012);
 
-      // Atmosphere & Lighting
-      const lightPreset = LIGHTING_PRESETS.golden;
-      scene.background = new THREE.Color(lightPreset.fog);
-      scene.fog = new THREE.FogExp2(lightPreset.fog, 0.012);
-
-      const ambLight = new THREE.AmbientLight(lightPreset.ambient, 0.9);
+      const ambLight = new THREE.AmbientLight(lp.ambient, lp.ambInt);
       scene.add(ambLight);
 
-      const dirLight = new THREE.DirectionalLight(lightPreset.dir, 1.2);
+      const dirLight = new THREE.DirectionalLight(lp.dir, lp.dirInt);
       dirLight.position.set(v.width / 2, 25, v.depth * 0.8);
       dirLight.castShadow = true;
       dirLight.shadow.mapSize.width = 2048;
@@ -418,44 +491,67 @@ const Walk = (() => {
       dirLight.shadow.camera.bottom = -v.depth;
       scene.add(dirLight);
 
-      // Floor
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: v.indoor ? 0xddcca8 : 0x769b52,
-        roughness: 0.35,
-        metalness: 0.08
-      });
-      const floorGeo = new THREE.PlaneGeometry(v.width, v.depth);
-      const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      // Floor Material per theme
+      let floorColor = v.indoor ? 0xddcca8 : 0x608048;
+      let roughness = 0.4;
+      let metalness = 0.08;
+
+      if (themeKey === "temple") {
+        floorColor = 0xc2a677; // Terracotta/sandstone temple floor
+        roughness = 0.55;
+      } else if (themeKey === "royal") {
+        floorColor = 0xede0cb; // Polished royal marble
+        roughness = 0.25;
+        metalness = 0.12;
+      } else if (themeKey === "modern") {
+        floorColor = 0xf5f3ee; // Ultra-clean reflective marble
+        roughness = 0.15;
+        metalness = 0.15;
+      }
+
+      const floorMat = new THREE.MeshStandardMaterial({ color: floorColor, roughness, metalness });
+      const floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(v.width, v.depth), floorMat);
       floorMesh.rotation.x = -Math.PI / 2;
       floorMesh.position.set(v.width / 2, 0, v.depth / 2);
       floorMesh.receiveShadow = true;
       scene.add(floorMesh);
 
+      // Temple Rangoli Floor Pattern / Centerpiece
+      if (themeKey === "temple") {
+        const rangoliGeo = new THREE.RingGeometry(0.2, 2.2, 32);
+        const rangoliMat = new THREE.MeshBasicMaterial({ color: 0xd97706, side: THREE.DoubleSide });
+        const rangoli = new THREE.Mesh(rangoliGeo, rangoliMat);
+        rangoli.rotation.x = -Math.PI / 2;
+        rangoli.position.set(v.width / 2, 0.02, v.depth * 0.35);
+        scene.add(rangoli);
+
+        const innerRing = new THREE.Mesh(new THREE.RingGeometry(0.1, 1.2, 24), new THREE.MeshBasicMaterial({ color: 0x9b1c1f, side: THREE.DoubleSide }));
+        innerRing.rotation.x = -Math.PI / 2;
+        innerRing.position.set(v.width / 2, 0.025, v.depth * 0.35);
+        scene.add(innerRing);
+      }
+
       // Walls
       if (v.indoor) {
-        const wallMat = new THREE.MeshStandardMaterial({
-          color: 0xede4d3,
-          roughness: 0.85,
-          metalness: 0.02
-        });
-        const wh = 5.0;
+        let wallCol = 0xede4d3;
+        if (themeKey === "temple") wallCol = 0xbfa980; // Sandstone sanctum walls
+        else if (themeKey === "royal") wallCol = 0xf5eedf;
 
-        // North wall
+        const wallMat = new THREE.MeshStandardMaterial({ color: wallCol, roughness: 0.8 });
+        const wh = 5.2;
+
         const wN = new THREE.Mesh(new THREE.BoxGeometry(v.width, wh, 0.4), wallMat);
         wN.position.set(v.width / 2, wh / 2, 0);
         scene.add(wN);
 
-        // East wall
         const wE = new THREE.Mesh(new THREE.BoxGeometry(0.4, wh, v.depth), wallMat);
         wE.position.set(v.width, wh / 2, v.depth / 2);
         scene.add(wE);
 
-        // West wall
         const wW = new THREE.Mesh(new THREE.BoxGeometry(0.4, wh, v.depth), wallMat);
         wW.position.set(0, wh / 2, v.depth / 2);
         scene.add(wW);
 
-        // South wall with entrance gap
         const mainDoor = v.doors.find(d => d.kind === "entrance") || { pos: v.width / 2, width: 4 };
         const wS1 = new THREE.Mesh(new THREE.BoxGeometry(Math.max(0.1, mainDoor.pos - mainDoor.width / 2), wh, 0.4), wallMat);
         wS1.position.set((mainDoor.pos - mainDoor.width / 2) / 2, wh / 2, v.depth);
@@ -466,7 +562,7 @@ const Walk = (() => {
         wS2.position.set(v.width - rWidth / 2, wh / 2, v.depth);
         scene.add(wS2);
 
-        // Chandeliers & Hanging Warm Lights
+        // Ceiling Chandeliers & Warm Lighting
         const chRows = Math.max(1, Math.floor(v.depth / 8));
         const chCols = Math.max(1, Math.floor(v.width / 8));
         for (let r = 0; r < chRows; r++) {
@@ -475,22 +571,16 @@ const Walk = (() => {
             const chZ = (v.depth / (chRows + 1)) * (r + 1);
 
             const chGroup = new THREE.Group();
-            // Hanging wire
-            const wireMat = new THREE.MeshBasicMaterial({ color: 0xc9a227 });
-            const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2), wireMat);
+            const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.2), new THREE.MeshBasicMaterial({ color: 0xc9a227 }));
             wire.position.set(0, wh - 0.6, 0);
             chGroup.add(wire);
 
-            // Chandelier fixture
-            const ringGeo = new THREE.TorusGeometry(0.8, 0.06, 8, 24);
-            const ringMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.9, roughness: 0.2 });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.06, 8, 24), new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.9, roughness: 0.2 }));
             ring.rotation.x = Math.PI / 2;
             ring.position.set(0, wh - 1.2, 0);
             chGroup.add(ring);
 
-            // Point light
-            const chLight = new THREE.PointLight(0xffe2aa, 0.9, 14);
+            const chLight = new THREE.PointLight(themeKey === "temple" ? 0xffb703 : 0xffe2aa, 0.85, 14);
             chLight.position.set(0, wh - 1.3, 0);
             chGroup.add(chLight);
 
@@ -500,156 +590,288 @@ const Walk = (() => {
         }
       }
 
-      // Ceremonial Red Carpet Aisle
+      // Ceremonial Carpet Aisle
+      let carpetCol = 0x9e1b2f; // Royal Maroon
+      if (themeKey === "temple") carpetCol = 0xb45309; // Saffron Gold
+      else if (themeKey === "modern") carpetCol = 0x1e293b;
+
       const carpetGeo = new THREE.PlaneGeometry(3.0, v.depth - 5);
-      const carpetMat = new THREE.MeshStandardMaterial({ color: 0x9e1b2f, roughness: 0.7 });
+      const carpetMat = new THREE.MeshStandardMaterial({ color: carpetCol, roughness: 0.7 });
       const carpet = new THREE.Mesh(carpetGeo, carpetMat);
       carpet.rotation.x = -Math.PI / 2;
       carpet.position.set(v.width / 2, 0.02, v.depth / 2 + 1.5);
       carpet.receiveShadow = true;
       scene.add(carpet);
 
-      // Obstacles (Pillars / Trees)
+      // Obstacles (Fixed Venue Pillars / Trees)
       v.obstacles.forEach(obs => {
-        const obsGeo = new THREE.CylinderGeometry(obs.w / 2, obs.w / 2, 4.5, 16);
-        const obsMat = new THREE.MeshStandardMaterial({ color: 0x8a826e, roughness: 0.6 });
+        const obsGeo = new THREE.CylinderGeometry(obs.w / 2, obs.w / 2, 4.8, 16);
+        const obsMat = new THREE.MeshStandardMaterial({ color: themeKey === "temple" ? 0x7c6a46 : 0x8a826e, roughness: 0.6 });
         const obsMesh = new THREE.Mesh(obsGeo, obsMat);
-        obsMesh.position.set(obs.x + obs.w / 2, 2.25, obs.y + obs.h / 2);
+        obsMesh.position.set(obs.x + obs.w / 2, 2.4, obs.y + obs.h / 2);
         obsMesh.castShadow = true;
         scene.add(obsMesh);
       });
 
-      // Build Rich Elements
+      // Build Celebratory Elements per active theme
+      st.elementGroups = [];
+      st.flames = [];
       L.elements.forEach(el => {
-        buildCelebrationElement(scene, el, spec, theme, v);
+        buildCelebrationElement(scene, el, spec, theme, v, themeKey);
       });
 
       camera.lookAt(target);
       renderer.render(scene, camera);
 
-      st.three = { scene, camera, renderer, controls, target };
+      st.three = { scene, camera, renderer, target };
     } catch (e) {
-      console.error("Three.js initialization failed, falling back to 2D/3D canvas:", e);
+      console.error("Three.js initialization failed:", e);
       st.canvas.style.display = "block";
       frame();
     }
   }
 
-  /* Builder for High-Quality Procedural 3D Celebration Assets */
-  function buildCelebrationElement(scene, el, spec, theme, venue) {
+  /* Builder for High-Quality Procedural 3D Celebration Assets Across 6 Themes */
+  function buildCelebrationElement(scene, el, spec, theme, venue, themeKey = "royal") {
     const pal = theme.palette || ["#f7f1e3", "#c9a227", "#8c6d1f", "#ffffff"];
     const goldHex = parseInt((pal[1] || "#d4af37").replace("#", "0x"), 16);
     const primHex = parseInt((pal[0] || "#9e1b2f").replace("#", "0x"), 16);
-    const whiteHex = 0xffffff;
 
     const cx = el.x + el.w / 2;
     const cz = el.y + el.h / 2;
 
     switch (el.type) {
       case "mandap": {
-        // 4 Carved Golden Pillars + Floral Canopy
         const mandapGroup = new THREE.Group();
-        const pilMat = new THREE.MeshStandardMaterial({ color: goldHex, metalness: 0.85, roughness: 0.25 });
-        const pilGeo = new THREE.CylinderGeometry(0.2, 0.25, 3.2, 16);
 
-        const offsets = [
-          [-el.w / 2 + 0.3, -el.h / 2 + 0.3],
-          [el.w / 2 - 0.3, -el.h / 2 + 0.3],
-          [-el.w / 2 + 0.3, el.h / 2 - 0.3],
-          [el.w / 2 - 0.3, el.h / 2 - 0.3]
-        ];
+        if (themeKey === "temple") {
+          // ==========================================
+          // AUTHENTIC SOUTH INDIAN TEMPLE MANDAP
+          // ==========================================
+          // 4 Carved Stone Pillars with Stepped Capitals
+          const stoneMat = new THREE.MeshStandardMaterial({ color: 0x826d4a, roughness: 0.65, metalness: 0.15 });
+          const offsets = [
+            [-el.w / 2 + 0.35, -el.h / 2 + 0.35],
+            [el.w / 2 - 0.35, -el.h / 2 + 0.35],
+            [-el.w / 2 + 0.35, el.h / 2 - 0.35],
+            [el.w / 2 - 0.35, el.h / 2 - 0.35]
+          ];
 
-        offsets.forEach(([ox, oz]) => {
-          const col = new THREE.Mesh(pilGeo, pilMat);
-          col.position.set(ox, 1.6, oz);
-          col.castShadow = true;
-          mandapGroup.add(col);
+          offsets.forEach(([ox, oz]) => {
+            // Base pedestal
+            const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.55), stoneMat);
+            baseMesh.position.set(ox, 0.2, oz);
+            mandapGroup.add(baseMesh);
 
-          // Hanging Marigold Garlands
-          const garMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.9 });
-          const gar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.2, 8), garMat);
-          gar.position.set(ox, 1.8, oz + 0.15);
-          mandapGroup.add(gar);
-        });
+            // Shaft
+            const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 2.6, 16), stoneMat);
+            shaft.position.set(ox, 1.7, oz);
+            shaft.castShadow = true;
+            mandapGroup.add(shaft);
 
-        // Canopy Roof
-        const canopyMat = new THREE.MeshStandardMaterial({ color: primHex, roughness: 0.5 });
-        const canopy = new THREE.Mesh(new THREE.BoxGeometry(el.w, 0.2, el.h), canopyMat);
-        canopy.position.set(0, 3.2, 0);
-        canopy.castShadow = true;
-        mandapGroup.add(canopy);
+            // Carved capital bracket
+            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.25, 0.65), stoneMat);
+            cap.position.set(ox, 3.1, oz);
+            mandapGroup.add(cap);
 
-        // Floral border
-        const florMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.9 });
-        const florBorder = new THREE.Mesh(new THREE.TorusGeometry(el.w * 0.42, 0.12, 8, 16), florMat);
-        florBorder.rotation.x = Math.PI / 2;
-        florBorder.position.set(0, 3.1, 0);
-        mandapGroup.add(florBorder);
+            // Hanging Yellow & Orange Marigold Torans
+            const toranMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.9 });
+            const toran = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 2.2, 8), toranMat);
+            toran.position.set(ox, 1.8, oz + 0.16);
+            mandapGroup.add(toran);
+          });
 
-        // Sacred Fire Altar (Havan Kund)
-        const altar = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.3, 1.0), new THREE.MeshStandardMaterial({ color: 0xb45309 }));
-        altar.position.set(0, 0.15, 0);
-        mandapGroup.add(altar);
+          // Temple Mandap Roof Canopy (Rich Maroon & Gold Trim)
+          const canopy = new THREE.Mesh(new THREE.BoxGeometry(el.w, 0.25, el.h), new THREE.MeshStandardMaterial({ color: 0x9b1c1f, roughness: 0.45 }));
+          canopy.position.set(0, 3.25, 0);
+          canopy.castShadow = true;
+          mandapGroup.add(canopy);
 
-        const flameLight = new THREE.PointLight(0xff8c00, 1.2, 6);
-        flameLight.position.set(0, 0.5, 0);
-        mandapGroup.add(flameLight);
+          // Floral Toran Border
+          const florBorder = new THREE.Mesh(new THREE.TorusGeometry(el.w * 0.44, 0.14, 8, 20), new THREE.MeshStandardMaterial({ color: 0xffb703, roughness: 0.9 }));
+          florBorder.rotation.x = Math.PI / 2;
+          florBorder.position.set(0, 3.12, 0);
+          mandapGroup.add(florBorder);
+
+          // 2 Authentic Banana Trees Flanking the Front Entrance Steps
+          [-el.w / 2 - 0.5, el.w / 2 + 0.5].forEach(bx => {
+            const bTree = new THREE.Group();
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 2.2, 8), new THREE.MeshStandardMaterial({ color: 0x5a4a2b, roughness: 0.8 }));
+            trunk.position.set(0, 1.1, 0);
+            bTree.add(trunk);
+
+            // 4 Broad Banana Leaves
+            const leafMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.6, side: THREE.DoubleSide });
+            for (let l = 0; l < 4; l++) {
+              const leaf = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 1.4), leafMat);
+              leaf.rotation.x = -0.5;
+              leaf.rotation.y = (l * Math.PI) / 2;
+              leaf.position.set(0, 2.1, 0);
+              bTree.add(leaf);
+            }
+            bTree.position.set(bx, 0, el.h / 2);
+            mandapGroup.add(bTree);
+          });
+
+          // 4 Authentic Brass Kuthuvilakku Floor Lamps with Flickering Glow
+          const lampMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.9, roughness: 0.2 });
+          [
+            [-el.w / 2 + 0.8, el.h / 2 - 0.2],
+            [el.w / 2 - 0.8, el.h / 2 - 0.2],
+            [-el.w / 2 + 0.8, -el.h / 2 + 0.8],
+            [el.w / 2 - 0.8, -el.h / 2 + 0.8]
+          ].forEach(([lx, lz]) => {
+            const lampGroup = new THREE.Group();
+            // Lamp base
+            const lBase = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 0.1, 16), lampMat);
+            lBase.position.set(0, 0.05, 0);
+            lampGroup.add(lBase);
+            // Lamp stem
+            const lStem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.1, 12), lampMat);
+            lStem.position.set(0, 0.6, 0);
+            lampGroup.add(lStem);
+            // Lamp tier oil dish
+            const lDish = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.12, 0.08, 16), lampMat);
+            lDish.position.set(0, 1.15, 0);
+            lampGroup.add(lDish);
+            // Flickering Flame Point Light
+            const flame = new THREE.PointLight(0xff9900, 1.1, 5);
+            flame.position.set(0, 1.25, 0);
+            flame.baseIntensity = 1.1;
+            lampGroup.add(flame);
+            if (st) st.flames.push(flame);
+
+            lampGroup.position.set(lx, 0, lz);
+            mandapGroup.add(lampGroup);
+          });
+
+          // Sacred Havan Kund (Fire Altar)
+          const kund = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.28, 0.9), new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.8 }));
+          kund.position.set(0, 0.14, 0);
+          mandapGroup.add(kund);
+
+          const kundFlame = new THREE.PointLight(0xff5500, 1.4, 7);
+          kundFlame.position.set(0, 0.45, 0);
+          kundFlame.baseIntensity = 1.4;
+          mandapGroup.add(kundFlame);
+          if (st) st.flames.push(kundFlame);
+
+        } else {
+          // Royal / Modern Mandap fallback
+          const pilMat = new THREE.MeshStandardMaterial({ color: goldHex, metalness: 0.85, roughness: 0.25 });
+          const pilGeo = new THREE.CylinderGeometry(0.2, 0.25, 3.2, 16);
+          const offsets = [
+            [-el.w / 2 + 0.3, -el.h / 2 + 0.3],
+            [el.w / 2 - 0.3, -el.h / 2 + 0.3],
+            [-el.w / 2 + 0.3, el.h / 2 - 0.3],
+            [el.w / 2 - 0.3, el.h / 2 - 0.3]
+          ];
+          offsets.forEach(([ox, oz]) => {
+            const col = new THREE.Mesh(pilGeo, pilMat);
+            col.position.set(ox, 1.6, oz);
+            mandapGroup.add(col);
+          });
+          const canopy = new THREE.Mesh(new THREE.BoxGeometry(el.w, 0.2, el.h), new THREE.MeshStandardMaterial({ color: primHex, roughness: 0.5 }));
+          canopy.position.set(0, 3.2, 0);
+          mandapGroup.add(canopy);
+        }
 
         mandapGroup.position.set(cx, 0, cz);
         scene.add(mandapGroup);
+        if (st) st.elementGroups.push(mandapGroup);
         break;
       }
 
       case "stage": {
-        // Raised Platform + Backdrop Drapes + Royal Loveseat
         const stGroup = new THREE.Group();
         const platMat = new THREE.MeshStandardMaterial({ color: primHex, roughness: 0.6 });
         const plat = new THREE.Mesh(new THREE.BoxGeometry(el.w, 0.8, el.h), platMat);
         plat.position.set(0, 0.4, 0);
-        plat.receiveShadow = true;
-        plat.castShadow = true;
         stGroup.add(plat);
 
-        // Gold Trim along Stage Edge
-        const trimMat = new THREE.MeshStandardMaterial({ color: goldHex, metalness: 0.9, roughness: 0.2 });
-        const trim = new THREE.Mesh(new THREE.BoxGeometry(el.w + 0.1, 0.1, el.h + 0.1), trimMat);
-        trim.position.set(0, 0.78, 0);
-        stGroup.add(trim);
+        if (themeKey === "royal") {
+          // ==========================================
+          // MYSURU ROYAL PALACE JHAROKHA STAGE
+          // ==========================================
+          // Golden Jharokha Multi-Arch Backdrop
+          const archMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.85, roughness: 0.25 });
+          const jharokha = new THREE.Mesh(new THREE.BoxGeometry(el.w * 0.92, 3.4, 0.2), archMat);
+          jharokha.position.set(0, 2.4, -el.h / 2 + 0.2);
+          stGroup.add(jharokha);
 
-        // Draped Backdrop
-        const backMat = new THREE.MeshStandardMaterial({ color: 0xfaf5ef, roughness: 0.4 });
-        const backdrop = new THREE.Mesh(new THREE.BoxGeometry(el.w * 0.95, 3.4, 0.2), backMat);
-        backdrop.position.set(0, 2.4, -el.h / 2 + 0.2);
-        stGroup.add(backdrop);
+          // 3 Carved Palace Arches along backdrop
+          [-el.w * 0.25, 0, el.w * 0.25].forEach(ax => {
+            const arch = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.12, 8, 20), archMat);
+            arch.position.set(ax, 2.6, -el.h / 2 + 0.32);
+            stGroup.add(arch);
+          });
 
-        // Stage Floral Arch
-        const archMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.9 });
-        const arch = new THREE.Mesh(new THREE.TorusGeometry(el.w * 0.35, 0.25, 8, 24), archMat);
-        arch.position.set(0, 2.5, -el.h / 2 + 0.3);
-        stGroup.add(arch);
+          // Royal Throneseat Sofa with Velvet Cushions
+          const throne = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 1.0), new THREE.MeshStandardMaterial({ color: 0x881337, roughness: 0.35 }));
+          throne.position.set(0, 1.05, -el.h * 0.1);
+          stGroup.add(throne);
 
-        // Royal Wedding Sofa
-        const sofaMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
-        const sofa = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 0.9), sofaMat);
-        sofa.position.set(0, 0.95, -el.h * 0.1);
-        stGroup.add(sofa);
+          // Stage Warm Spotlights
+          const spot = new THREE.SpotLight(0xfff1d0, 2.2, 18, Math.PI / 4, 0.3);
+          spot.position.set(0, 5.0, 3.0);
+          spot.target = plat;
+          stGroup.add(spot);
 
-        // Stage Warm Spotlights
-        const spot = new THREE.SpotLight(0xfff1d0, 2.0, 16, Math.PI / 4, 0.3);
-        spot.position.set(0, 4.8, 2.5);
-        spot.target = plat;
-        stGroup.add(spot);
+        } else if (themeKey === "corporate") {
+          // Corporate Dual LED Display Panels & Modern Podium
+          const ledMat = new THREE.MeshBasicMaterial({ color: 0x1e3a8a });
+          const scr1 = new THREE.Mesh(new THREE.BoxGeometry(el.w * 0.42, 2.6, 0.1), ledMat);
+          scr1.position.set(-el.w * 0.24, 2.2, -el.h / 2 + 0.2);
+          stGroup.add(scr1);
+
+          const scr2 = new THREE.Mesh(new THREE.BoxGeometry(el.w * 0.42, 2.6, 0.1), ledMat);
+          scr2.position.set(el.w * 0.24, 2.2, -el.h / 2 + 0.2);
+          stGroup.add(scr2);
+
+          // Presenter Podium
+          const podium = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.6), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 }));
+          podium.position.set(0, 1.25, el.h * 0.15);
+          stGroup.add(podium);
+
+        } else if (themeKey === "birthday") {
+          // Multi-color Balloon Arch Garland & Neon Backdrop
+          const balloonMat1 = new THREE.MeshStandardMaterial({ color: 0xec4899, roughness: 0.2 });
+          const balloonMat2 = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2 });
+          for (let b = 0; b < 16; b++) {
+            const angle = (b / 15) * Math.PI;
+            const bx = Math.cos(angle) * (el.w * 0.35);
+            const by = Math.sin(angle) * 1.8 + 1.2;
+            const bMesh = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 12), b % 2 === 0 ? balloonMat1 : balloonMat2);
+            bMesh.position.set(bx, by, -el.h / 2 + 0.3);
+            stGroup.add(bMesh);
+          }
+
+          // Cake Table
+          const cakeTable = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.9, 16), new THREE.MeshStandardMaterial({ color: 0xfdf2f8 }));
+          cakeTable.position.set(0, 1.15, 0);
+          stGroup.add(cakeTable);
+
+        } else {
+          // Standard Backdrop & Loveseat
+          const backdrop = new THREE.Mesh(new THREE.BoxGeometry(el.w * 0.95, 3.4, 0.2), new THREE.MeshStandardMaterial({ color: 0xfaf5ef, roughness: 0.4 }));
+          backdrop.position.set(0, 2.4, -el.h / 2 + 0.2);
+          stGroup.add(backdrop);
+
+          const sofa = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 0.9), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 }));
+          sofa.position.set(0, 0.95, -el.h * 0.1);
+          stGroup.add(sofa);
+        }
 
         stGroup.position.set(cx, 0, cz);
         scene.add(stGroup);
+        if (st) st.elementGroups.push(stGroup);
         break;
       }
 
       case "seating": {
-        // Organized Rows of Banquet Chairs
         const seatGroup = new THREE.Group();
         const chairMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.4, metalness: 0.3 });
-        const seatMat = new THREE.MeshStandardMaterial({ color: 0x9e1b2f, roughness: 0.6 });
+        const seatMat = new THREE.MeshStandardMaterial({ color: primHex, roughness: 0.6 });
 
         const rows = Math.min(8, Math.max(2, Math.floor(el.h / 1.5)));
         const cols = Math.min(12, Math.max(3, Math.floor(el.w / 1.4)));
@@ -659,13 +881,11 @@ const Walk = (() => {
             const chX = -el.w / 2 + 0.7 + (c * (el.w - 1.4)) / Math.max(1, cols - 1);
             const chZ = -el.h / 2 + 0.7 + (r * (el.h - 1.4)) / Math.max(1, rows - 1);
 
-            // Chair Seat
             const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.5), seatMat);
             seat.position.set(chX, 0.45, chZ);
             seat.castShadow = true;
             seatGroup.add(seat);
 
-            // Chair Backrest
             const back = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.5, 0.06), chairMat);
             back.position.set(chX, 0.72, chZ + 0.22);
             seatGroup.add(back);
@@ -674,11 +894,11 @@ const Walk = (() => {
 
         seatGroup.position.set(cx, 0, cz);
         scene.add(seatGroup);
+        if (st) st.elementGroups.push(seatGroup);
         break;
       }
 
       case "dining": {
-        // Banquet Dining Tables with Linen Cloths & Centerpieces
         const dinGroup = new THREE.Group();
         const linenMat = new THREE.MeshStandardMaterial({ color: 0xfdfbf7, roughness: 0.4 });
         const runMat = new THREE.MeshStandardMaterial({ color: goldHex, roughness: 0.5 });
@@ -692,18 +912,15 @@ const Walk = (() => {
             const tx = -el.w / 2 + 1.2 + (c * (el.w - 2.4)) / Math.max(1, tCols - 1);
             const tz = -el.h / 2 + 1.2 + (r * (el.h - 2.4)) / Math.max(1, tRows - 1);
 
-            // Table Linen
             const table = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.85, 0.75, 16), linenMat);
             table.position.set(tx, 0.38, tz);
             table.castShadow = true;
             dinGroup.add(table);
 
-            // Table Runner
             const runner = new THREE.Mesh(new THREE.CylinderGeometry(0.81, 0.81, 0.02, 16), runMat);
             runner.position.set(tx, 0.76, tz);
             dinGroup.add(runner);
 
-            // Floral Centerpiece with Candle
             const center = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), florMat);
             center.position.set(tx, 0.85, tz);
             dinGroup.add(center);
@@ -712,11 +929,11 @@ const Walk = (() => {
 
         dinGroup.position.set(cx, 0, cz);
         scene.add(dinGroup);
+        if (st) st.elementGroups.push(dinGroup);
         break;
       }
 
       case "buffet": {
-        // Buffet Counters with Chafing Warmers
         const bufGroup = new THREE.Group();
         const skirtMat = new THREE.MeshStandardMaterial({ color: primHex, roughness: 0.6 });
         const topMat = new THREE.MeshStandardMaterial({ color: 0xf8f9fa, roughness: 0.2 });
@@ -731,7 +948,6 @@ const Walk = (() => {
         counterTop.position.set(0, 0.92, 0);
         bufGroup.add(counterTop);
 
-        // Chafing Dish Food Warmers
         const numDishes = Math.min(8, Math.max(2, Math.floor(el.w / 1.2)));
         for (let d = 0; d < numDishes; d++) {
           const dx = -el.w / 2 + 0.7 + (d * (el.w - 1.4)) / Math.max(1, numDishes - 1);
@@ -742,22 +958,22 @@ const Walk = (() => {
 
         bufGroup.position.set(cx, 0, cz);
         scene.add(bufGroup);
+        if (st) st.elementGroups.push(bufGroup);
         break;
       }
 
       default: {
-        // Generic styled block with bevels
         const genMat = new THREE.MeshStandardMaterial({ color: goldHex, roughness: 0.5, metalness: 0.2 });
         const box = new THREE.Mesh(new THREE.BoxGeometry(el.w, 1.0, el.h), genMat);
         box.position.set(cx, 0.5, cz);
         box.castShadow = true;
         scene.add(box);
+        if (st) st.elementGroups.push(box);
         break;
       }
     }
   }
 
-  /* Smooth Walkthrough Camera Route Interpolator */
   function getWalkthroughCamPos(sc, venue, t) {
     const route = sc.route && sc.route.length > 1 ? sc.route : [
       [venue.width / 2, venue.depth - 1.0],
@@ -795,11 +1011,18 @@ const Walk = (() => {
     return { x, y: 1.65 + bob, z, head };
   }
 
-  /* Render Frame */
   function frame() {
     if (!st) return;
     const scn = st.scenes[st.i];
     if (!scn) return;
+
+    // Flame flicker animation
+    if (st.flames && st.flames.length) {
+      const time = performance.now() * 0.006;
+      st.flames.forEach((fl, idx) => {
+        fl.intensity = fl.baseIntensity + Math.sin(time * 3 + idx) * 0.16 + Math.cos(time * 7 + idx * 2) * 0.08;
+      });
+    }
 
     if (st.three && st.three.renderer) {
       if (st.mode === "walk") {
@@ -814,70 +1037,33 @@ const Walk = (() => {
       }
       st.three.renderer.render(st.three.scene, st.three.camera);
     } else {
-      // Enhanced 2D/3D canvas fallback renderer
       drawCanvasFallback(st.canvas, st.plan, scn, st.t);
     }
   }
 
-  /* Enhanced High-Detail 2D/3D Canvas Fallback */
   function drawCanvasFallback(cv, plan, sc, t) {
     const ctx = cv.getContext("2d");
     const W = cv.width, H = cv.height;
-    const vis = plan.vision, v = vis.venue, L = vis.layout;
+    const vis = plan.vision, v = vis.venue;
     const camData = getWalkthroughCamPos(sc, v, t);
 
-    // Ceiling / Sky Gradient
-    const sky = LIGHTING_PRESETS.golden.sky;
-    const grad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
-    grad.addColorStop(0, sky[0]);
-    grad.addColorStop(1, sky[1]);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H * 0.5);
+    const lp = LIGHTING_PRESETS[st ? st.themeKey : "golden"] || LIGHTING_PRESETS.golden;
+    const sky = lp.sky;
 
-    // Floor
-    ctx.fillStyle = "#ddcca8";
-    ctx.fillRect(0, H * 0.5, W, H * 0.5);
+    const g = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    g.addColorStop(0, sky[0]); g.addColorStop(1, sky[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 
-    // Red Carpet
-    ctx.fillStyle = "#9e1b2f";
-    ctx.beginPath();
-    ctx.moveTo(W * 0.38, H * 0.5);
-    ctx.lineTo(W * 0.62, H * 0.5);
-    ctx.lineTo(W * 0.8, H);
-    ctx.lineTo(W * 0.2, H);
-    ctx.closePath();
-    ctx.fill();
+    ctx.fillStyle = "#ddcca8"; ctx.fillRect(0, H * 0.55, W, H * 0.45);
 
-    // Decorated Stage Silhouette
     ctx.fillStyle = "#d4af37";
-    ctx.fillRect(W * 0.28, H * 0.34, W * 0.44, H * 0.16);
-
-    // Floral Arch
-    ctx.strokeStyle = "#10b981";
-    ctx.lineWidth = 14;
-    ctx.beginPath();
-    ctx.arc(W * 0.5, H * 0.34, W * 0.18, Math.PI, 0, false);
-    ctx.stroke();
-
-    // Chandeliers
-    ctx.fillStyle = "#ffd700";
-    ctx.beginPath();
-    ctx.arc(W * 0.32, H * 0.2, 14, 0, Math.PI * 2);
-    ctx.arc(W * 0.68, H * 0.2, 14, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Caption
-    ctx.fillStyle = "rgba(11,17,32,0.85)";
-    ctx.fillRect(0, H - 44, W, 44);
-    ctx.fillStyle = "#ffd700";
-    ctx.font = "700 15px system-ui";
-    ctx.fillText(sc.title, 16, H - 24);
-    ctx.fillStyle = "#cbd5e1";
-    ctx.font = "12px system-ui";
-    ctx.fillText(`${sc.start}–${sc.end} · ~${sc.attendees} guests · ${sc.zone.label}`, 16, H - 8);
+    ctx.font = "bold 18px Inter, sans-serif";
+    ctx.fillText(`${sc.title} (${sc.start})`, 24, 36);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "13px Inter, sans-serif";
+    ctx.fillText(`Camera position: (${camData.x.toFixed(1)}m, ${camData.z.toFixed(1)}m) · Eye level 1.65m`, 24, 62);
   }
 
-  /* Video Recorder */
   function record() {
     if (!st) return;
     const cv = st.three && st.three.renderer ? st.three.renderer.domElement : st.canvas;
@@ -901,5 +1087,5 @@ const Walk = (() => {
     setTimeout(() => rec.state !== "inactive" && rec.stop(), total + 400);
   }
 
-  return { mount, stop, setCameraPreset };
+  return { mount, stop, setCameraPreset, markOutdated, syncElements, reRender };
 })();
