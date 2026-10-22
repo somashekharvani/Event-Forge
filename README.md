@@ -3,7 +3,7 @@
 > **Plan Smarter. Visualize Every Detail. Celebrate Without Limits.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-event--forge--taj8.vercel.app-7a1f2b?style=for-the-badge&logo=vercel&logoColor=white)](https://event-forge-taj8.vercel.app/)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/somashekharvani/EventForge)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/somashekharvani/Event-Forge)
 [![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/34n7f3RcrKw)
 [![Evaluation Tests](https://img.shields.io/badge/Evals-31%2F31%20Passed-2ecc71?style=for-the-badge&logo=pytest&logoColor=white)](#testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](#license)
@@ -15,9 +15,9 @@ From a traditional South Indian temple-themed wedding to a modern corporate gala
 ---
 
 * **🌐 Live Demo:** [https://event-forge-taj8.vercel.app/](https://event-forge-taj8.vercel.app/)
-* **💻 GitHub Repository:** [https://github.com/somashekharvani/EventForge](https://github.com/somashekharvani/EventForge)
+* **💻 GitHub Repository:** [https://github.com/somashekharvani/Event-Forge](https://github.com/somashekharvani/Event-Forge)
 * **🎥 Demo Video:** [https://youtu.be/34n7f3RcrKw](https://youtu.be/34n7f3RcrKw)
-* **📊 Project Presentation:** [Presentation Link](https://github.com/somashekharvani/EventForge)
+* **📊 Project Presentation:** [Presentation Link](https://github.com/somashekharvani/Event-Forge)
 
 ---
 
@@ -398,7 +398,7 @@ EVENTFORGE ARCHITECTURE
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/somashekharvani/EventForge.git
+git clone https://github.com/somashekharvani/Event-Forge.git
 cd EventForge
 ```
 
