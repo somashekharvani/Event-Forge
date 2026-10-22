@@ -263,11 +263,33 @@ def apply_changes(state: dict, changes: dict, cache: dict | None = None) -> tupl
         elif k == "dislike_theme":
             s["memory"]["disliked_themes"] = list({*s["memory"]["disliked_themes"], v})
             s["memory"]["liked_themes"] = [x for x in s["memory"]["liked_themes"] if x != v]
-        elif k == "theme":
+        elif k in ("theme", "theme_id"):
             th = next((t for t in I.THEMES if t["id"] == v), None)
+            if not th and isinstance(v, str):
+                v_lower = v.lower()
+                alias_map = {
+                    "temple": "temple_red",
+                    "temple_traditional": "temple_red",
+                    "mysuru_royal": "royal_gold",
+                    "royal": "royal_gold",
+                    "modern": "minimal_sage",
+                    "modern_luxury": "minimal_sage",
+                    "garden": "boho_garden",
+                    "garden_celebration": "boho_garden",
+                    "birthday": "unicorn",
+                    "birthday_fantasy": "unicorn",
+                    "corporate": "cultural_fair",
+                    "corporate_gala": "cultural_fair",
+                }
+                target_id = alias_map.get(v_lower)
+                if target_id:
+                    th = next((t for t in I.THEMES if t["id"] == target_id), None)
+                if not th:
+                    th = next((t for t in I.THEMES if v_lower in t["id"].lower() or v_lower in t["name"].lower()), None)
             if th:
                 s["layout_theme"] = {"id": th["id"], "name": th["name"], "palette": th["palette"]}
-                s["spec"]["theme"] = v
+                s["spec"]["theme"] = th["id"]
+                notes.append({"ok": True, "text": f"Decor theme set to {th['name']}."})
         elif k == "program":
             s["program_overrides"].setdefault(v["id"], {}).update({kk: vv for kk, vv in v.items() if kk != "id"})
         elif k == "weights":
