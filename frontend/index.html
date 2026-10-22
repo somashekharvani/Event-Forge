@@ -3,13 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EventForge — plan weddings, birthdays and community events</title>
+<title>EventForge — Neuro-Symbolic AI Event Planner</title>
+<meta name="description" content="Plan smarter with AI-powered event intelligence. Organize budgets, coordinate vendors, optimize timelines, and visualize your venue in 3D.">
 <link rel="stylesheet" href="/static/styles.css">
+<!-- Three.js for Realistic 3D Vision Studio Venue Visualization -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-<div id="app">
-  <nav id="rail" aria-label="Sections">
-    <div class="brand">Event<i>Forge</i></div>
+<div id="app" class="landing-layout">
+  <nav id="rail" aria-label="Sections" hidden>
+    <div class="brand"><span class="brand-sparkle">✦</span> Event<i>Forge</i></div>
     <div class="nav" id="nav"></div>
   </nav>
   <div id="main">
@@ -28,7 +31,8 @@
 <div id="toasts" role="status"></div>
 <script src="/static/js/core.js"></script>
 <script src="/static/js/charts.js"></script>
-<script src="/static/js/v_home.js"></script>
+<script src="/static/js/v_intake.js"></script>
+<script src="/static/js/v_landing.js"></script>
 <script src="/static/js/v_overview.js"></script>
 <script src="/static/js/v_budget.js"></script>
 <script src="/static/js/v_timeline.js"></script>

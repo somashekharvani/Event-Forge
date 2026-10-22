@@ -26,11 +26,29 @@ const cap = s => (s || "").replace(/_/g, " ").replace(/^./, c => c.toUpperCase()
 const debounce = (fn, ms = 250) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
 /* state */
-const S = { pid: null, plan: null, version: null, tab: "home", sub: {}, busy: 0, vision: { selected: null, edits: null, photoData: null } };
+const S = {
+  pid: null,
+  plan: null,
+  version: null,
+  tab: "landing",
+  sub: {},
+  busy: 0,
+  vision: { selected: null, edits: null, photoData: null }
+};
+
 const VIEWS = {};      // name -> {render(plan)->html, bind(root,plan)}
+
 const TABS = [
-  ["overview", "Overview"], ["budget", "Budget"], ["timeline", "Timeline"], ["vendors", "Vendors"], ["ideas", "Ideas"],
-  ["vision", "Vision studio"], ["community", "Community"], ["verify", "Verify"], ["history", "Versions & export"],
+  ["overview", "Overview", "📊"],
+  ["intake", "New / Edit Plan", "📝"],
+  ["budget", "Budget & Risk", "💰"],
+  ["timeline", "Timeline & Tasks", "⏱️"],
+  ["vendors", "Vendors", "🤝"],
+  ["ideas", "Ideas & Themes", "🎨"],
+  ["vision", "Vision Studio", "🏛️"],
+  ["verify", "Verify & Stress Test", "🛡️"],
+  ["community", "Community Toolkit", "👥"],
+  ["history", "Versions & Export", "📜"],
 ];
 
 async function api(path, opts = {}) {
@@ -42,10 +60,12 @@ async function api(path, opts = {}) {
   if (!r.ok) { const e = new Error((data && data.error) || r.statusText); e.status = r.status; throw e; }
   return data;
 }
+
 function toast(msg, kind = "") {
   const t = document.createElement("div"); t.className = "toast " + kind; t.textContent = msg; $("#toasts").append(t);
   setTimeout(() => t.remove(), kind === "bad" ? 6000 : 3200);
 }
+
 async function guard(fn, label) {
   try { S.busy++; return await fn(); } catch (e) { toast((label ? label + ": " : "") + e.message, "bad"); console.error(e); } finally { S.busy--; }
 }
@@ -56,70 +76,155 @@ function setPlan(pkg) {
   try { localStorage.setItem("ef_pid", S.pid); } catch { }
   render();
 }
+
 function go(tab, sub) {
-  S.tab = tab; if (sub) S.sub[tab] = sub; render(); window.scrollTo({ top: 0 });
-  try { location.hash = tab; } catch { }
+  S.tab = tab;
+  if (sub) S.sub[tab] = sub;
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  try { location.hash = tab === "landing" ? "" : tab; } catch { }
 }
+
 function renderNav() {
   const nav = $("#nav");
-  if (!S.plan) { nav.innerHTML = `<button aria-current="page">Start a plan</button>`; return; }
-  const c = S.plan.critic, bad = c.hard_failed.length;
-  nav.innerHTML = TABS.map(([k, l]) => `<button data-go="${k}" ${S.tab === k ? 'aria-current="page"' : ""}>${l}${k === "verify" ? (bad ? `<span class="badge">${bad}</span>` : `<span class="badge ok">✓</span>`) : ""}</button>`).join("") +
-    `<hr><button data-go="home">New plan</button>`;
+  if (!nav) return;
+  
+  let html = `<button class="nav-home-btn" data-go="landing">← Public Website</button><hr>`;
+  
+  if (!S.plan) {
+    html += `<button data-go="intake" aria-current="page">📝 Create a Plan</button>`;
+    nav.innerHTML = html;
+    return;
+  }
+  
+  const c = S.plan.critic, bad = c ? c.hard_failed.length : 0;
+  html += TABS.map(([k, l, icon]) => `
+    <button data-go="${k}" ${S.tab === k ? 'aria-current="page"' : ""}>
+      <span>${icon}</span>
+      <span>${l}</span>
+      ${k === "verify" ? (bad ? `<span class="badge">${bad}</span>` : `<span class="badge ok">✓</span>`) : ""}
+    </button>
+  `).join("") + `
+    <hr>
+    <button data-go="intake" class="nav-new-btn">✨ Plan New Event</button>
+  `;
+  nav.innerHTML = html;
 }
+
 function renderTop() {
   const t = $("#topbar");
-  if (!S.plan) { t.hidden = true; $("#fab").hidden = true; return; }
-  t.hidden = false; $("#fab").hidden = false;
+  if (!t) return;
+  if (S.tab === "landing" || !S.plan) {
+    t.hidden = true;
+    const fab = $("#fab");
+    if (fab) fab.hidden = true;
+    return;
+  }
+  
+  t.hidden = false;
+  const fab = $("#fab");
+  if (fab) fab.hidden = false;
+  
   const p = S.plan, o = p.overview, sp = p.spec;
-  const feas = { feasible: ["ok", "Within budget"], at_risk: ["warn", "Tight on budget"], infeasible: ["bad", "Over budget"] }[o.feasibility];
+  const feas = { feasible: ["ok", "Within budget"], at_risk: ["warn", "Tight on budget"], infeasible: ["bad", "Over budget"] }[o.feasibility] || ["info", o.feasibility];
+  
   t.innerHTML = `
-    <div><div class="title">${esc(p.name)}</div><div class="small muted">${cap(sp.event_type)} · ${esc(sp.city)} · ${fdate(sp.date)}${sp.date_assumed ? " (assumed)" : ""}</div></div>
+    <button class="btn ghost sm" id="btn-top-home" title="Return to Public Homepage">← Home</button>
+    <div>
+      <div class="title">${esc(p.name)}</div>
+      <div class="small muted">${cap(sp.event_type)} · ${esc(sp.city)} · ${fdate(sp.date)}${sp.date_assumed ? " (assumed)" : ""}</div>
+    </div>
     <div class="stat"><b>${o.days_to_event}</b><span>days to go</span></div>
     <div class="stat"><b>${short(sp.budget_paise)}</b><span>budget · <span class="chip ${feas[0]}">${feas[1]}</span></span></div>
-    <div class="stat"><b>${o.checks_passed}/${o.checks_total}</b><span>checks passed</span></div>
+    <div class="stat"><b>${o.checks_passed}/${o.checks_total}</b><span>checks pass</span></div>
     <div class="grow"></div>
-    <label class="f" style="min-width:210px"><span>Guests: <b id="gv">${sp.guests}</b> <span id="gd" class="small"></span></span>
-      <input type="range" id="gslider" min="10" max="${Math.max(800, sp.guests * 2)}" step="5" value="${sp.guests}" aria-label="What-if guest count"></label>
-    <button class="btn ghost sm" id="undo" title="Undo last applied change">Undo</button><button class="btn ghost sm" id="redo">Redo</button>`;
+    <label class="f" style="min-width:210px">
+      <span>Guests: <b id="gv">${sp.guests}</b> <span id="gd" class="small"></span></span>
+      <input type="range" id="gslider" min="10" max="${Math.max(800, sp.guests * 2)}" step="5" value="${sp.guests}" aria-label="What-if guest count">
+    </label>
+    <button class="btn ghost sm" id="undo" title="Undo last applied change">Undo</button>
+    <button class="btn ghost sm" id="redo" title="Redo last change">Redo</button>`;
+
+  const homeBtn = $("#btn-top-home", t);
+  if (homeBtn) homeBtn.onclick = () => go("landing");
+
   const sl = $("#gslider"), gv = $("#gv"), gd = $("#gd");
   const live = debounce(async () => {
     const g = +sl.value; if (g === sp.guests) { gd.innerHTML = ""; return; }
     try {
       const w = await api(`/projects/${S.pid}/whatif`, { body: { changes: { guests: g } } });
       const d = w.estimate_delta;
-      gd.innerHTML = `<span class="${d > 0 ? "delta-up" : "delta-down"}">${d >= 0 ? "+" : ""}${short(d)}</span> · ${w.after.feasibility.replace("_", " ")} · <a href="#" id="gapply">review &amp; apply</a>`;
-      $("#gapply").onclick = e => { e.preventDefault(); propose({ guests: g }); };
+      gd.innerHTML = `<span class="${d > 0 ? "delta-up" : "delta-down"}">${d >= 0 ? "+" : ""}${short(d)}</span> · ${w.after.feasibility.replace("_", " ")} · <a href="#" id="gapply">apply</a>`;
+      const ga = $("#gapply");
+      if (ga) ga.onclick = e => { e.preventDefault(); propose({ guests: g }); };
     } catch (e) { gd.textContent = e.message; }
   }, 220);
-  sl.oninput = () => { gv.textContent = sl.value; live(); };
-  $("#undo").onclick = () => guard(async () => { setPlan(await api(`/projects/${S.pid}/undo`, { body: {} })); toast("Undone", "ok"); });
-  $("#redo").onclick = () => guard(async () => { setPlan(await api(`/projects/${S.pid}/redo`, { body: {} })); toast("Redone", "ok"); });
+  
+  if (sl) sl.oninput = () => { gv.textContent = sl.value; live(); };
+  const u = $("#undo"), r = $("#redo");
+  if (u) u.onclick = () => guard(async () => { setPlan(await api(`/projects/${S.pid}/undo`, { body: {} })); toast("Undone", "ok"); });
+  if (r) r.onclick = () => guard(async () => { setPlan(await api(`/projects/${S.pid}/redo`, { body: {} })); toast("Redone", "ok"); });
 }
+
 function render() {
   if (typeof Walk !== "undefined") Walk.stop();
-  renderNav(); renderTop();
+  const app = $("#app");
+  const rail = $("#rail");
+  const topbar = $("#topbar");
+  const fab = $("#fab");
   const v = $("#view");
-  const name = S.plan ? S.tab : "home";
-  const view = VIEWS[name === "home" ? "home" : name] || VIEWS.overview;
+
+  if (S.tab === "landing") {
+    if (app) app.classList.add("landing-layout");
+    if (rail) rail.hidden = true;
+    if (topbar) topbar.hidden = true;
+    if (fab) fab.hidden = true;
+    
+    const view = VIEWS.landing || VIEWS.home;
+    v.innerHTML = view.render();
+    view.bind && view.bind(v);
+    return;
+  }
+
+  // Dashboard workspace mode
+  if (app) app.classList.remove("landing-layout");
+  if (rail) rail.hidden = false;
+  renderNav();
+  renderTop();
+
+  const activeTabName = S.tab;
+  let view = VIEWS[activeTabName];
+  if (!view) {
+    view = S.plan ? VIEWS.overview : (VIEWS.intake || VIEWS.home);
+  }
+  
   v.innerHTML = view.render(S.plan);
   view.bind && view.bind(v, S.plan);
-  $("#llmchip").textContent = S.plan ? (S.plan.meta.llm.startsWith("enabled") ? "LLM on" : "deterministic mode") : "";
+  
+  const chip = $("#llmchip");
+  if (chip) chip.textContent = S.plan ? (S.plan.meta.llm.startsWith("enabled") ? "LLM on" : "deterministic mode") : "";
 }
+
 document.addEventListener("click", e => {
-  const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go, g.dataset.sub); }
+  const g = e.target.closest("[data-go]");
+  if (g) {
+    e.preventDefault();
+    go(g.dataset.go, g.dataset.sub);
+  }
 });
 
 /* ----- change proposals: show impact before anything is applied ----- */
 async function propose(changes, label) {
   return guard(async () => {
     const p = await api(`/projects/${S.pid}/propose`, { body: { changes, label } });
-    showProposal(p); return p;
+    showProposal(p);
+    return p;
   }, "Couldn't evaluate that change");
 }
+
 function miniPlan(layout, venue, w = 380) {
   const sc = w / venue.width, h = venue.depth * sc;
-  const col = TYPE_COLORS;
+  const col = typeof TYPE_COLORS !== "undefined" ? TYPE_COLORS : {};
   let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Floor plan preview" style="background:#fbf8f1;border:1px solid var(--line);border-radius:8px">`;
   venue.obstacles.forEach(o => s += `<rect x="${o.x * sc}" y="${o.y * sc}" width="${o.w * sc}" height="${o.h * sc}" fill="#9aa88a"/>`);
   layout.elements.forEach(e => {
@@ -130,7 +235,9 @@ function miniPlan(layout, venue, w = 380) {
   venue.doors.forEach(d => { const [x, y] = doorPoint(venue, d); s += `<circle cx="${x * sc}" cy="${y * sc}" r="4" fill="${d.kind === "entrance" ? "#0f7b6c" : "#b3225e"}"/>`; });
   return s + "</svg>";
 }
+
 function doorPoint(v, d) { return { S: [d.pos, v.depth], N: [d.pos, 0], E: [v.width, d.pos], W: [0, d.pos] }[d.wall]; }
+
 function showProposal(p) {
   const i = p.impact, b = i.budget, t = i.timeline, v = i.vision, c = i.critic;
   const dcl = b.delta > 0 ? "delta-up" : b.delta < 0 ? "delta-down" : "";
@@ -167,6 +274,7 @@ function showProposal(p) {
   $("#p-cancel").onclick = () => { api(`/proposals/${p.proposal_id}/reject`, { body: {} }).catch(() => { }); closeModal(); };
   $("#p-apply").onclick = () => guard(async () => { const g = await api(`/proposals/${p.proposal_id}/apply`, { body: {} }); closeModal(); setPlan(g); toast("Applied · undo is one click away", "ok"); });
 }
+
 function openModal(html) { $("#modal").innerHTML = html; $("#overlay").classList.add("on"); $("#modal").focus?.(); }
 function closeModal() { $("#overlay").classList.remove("on"); }
 $("#overlay").addEventListener("click", e => { if (e.target.id === "overlay") closeModal(); });
@@ -176,6 +284,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { closeModal
 const SUGG = ["What are the risks?", "Make it 400 guests", "Move dining away from the entrance", "Change decoration to white and gold", "How can I save money?", "What's next?"];
 function chatInit() {
   const box = $("#msgs");
+  if (!box) return;
   const add = (cls, txt) => { const d = document.createElement("div"); d.className = "msg " + cls; d.textContent = txt; box.append(d); box.scrollTop = box.scrollHeight; return d; };
   $("#chat-sugg").innerHTML = SUGG.slice(0, 4).map(s => `<button class="btn ghost sm" type="button" data-q="${esc(s)}">${esc(s)}</button>`).join("");
   const send = async text => {
